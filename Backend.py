@@ -43,4 +43,4 @@ class ChatsResponse(BaseModel):
 # user_id = user001をブラウザやポストマンで入力すること。
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     data = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
-    return data
+    return ChatsResponse(data)
