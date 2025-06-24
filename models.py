@@ -13,8 +13,8 @@ Base = declarative_base()
 """
 class ChatsModel(Base):
     __tablename__ = "chats" # テーブル名
-    user_id = Column(Integer, primary_key=True, index=True) # 主キー
-    date_time = Column(DateTime, primary_key=True, index=True) # 日時
+    user_id = Column(Integer, primary_key=True, index=True)
+    date_time = Column(DateTime, primary_key=True, index=True)
     # user_prompt = Column(String)
     AI_objective_answer = Column(String)
     AI_personalized_answer = Column(String)
