@@ -31,7 +31,7 @@ app = FastAPI()
 
 # DB test
 @app.get("/chats/{user_id}", response_model=ChatsResponse)
-# user_id = user001をブラウザやポストマンで入力すること。
+# user_id = user001をブラウザやポストマンで入力してテストせよ。
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     data = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
     return ChatsResponse(data)
