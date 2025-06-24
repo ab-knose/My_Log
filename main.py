@@ -1,16 +1,23 @@
-from fastapi import FastAPI, HTTPException, Depends
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+# FastAPIおよびpydantic
 from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Depends
+# SQLAlchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
+# general
 import datetime
+# 自作のmodels, schemas, crud
+from models import ChatsModel
+from schemas import ChatsResponse
+from crud import *
 
-# DB接続設定
-#DATABASE_URL要修正
+# データベースのURLを設定　
+# [要対応？]DATABASE_URL が研修で指定されている形式と違うらしい？
 DATABASE_URL = "mysql+pymysql://admin:Digitaldev1@group1-chats.c7c4ksi06r6a.ap-southeast-2.rds.amazonaws.com:3306/group1"
+
+# SQLAlchemyのエンジンとセッションを作成
 engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
 def get_db_session():
     db_session = SessionLocal()
@@ -18,26 +25,6 @@ def get_db_session():
         yield db_session
     finally:
         db_session.close()
-
-# DBモデル定義
-class ChatsModel(Base):
-    __tablename__ = "chats" # テーブル名
-    user_id = Column(Integer, primary_key=True, index=True) # 主キー
-    date_time = Column(DateTime, primary_key=True, index=True) # 日時
-    # user_prompt = Column(String)
-    AI_objective_answer = Column(String)
-    AI_personalized_answer = Column(String)
-"""
-2025/06/24現在、chatsテーブルにはuser_promptは存在しないため、コメントアウトした。
-後ほどchatsテーブルとともに修正すべし。
-"""
-
-# DB_chatsのレスポンススキーマ定義
-class ChatsResponse(BaseModel):
-    user_id: str
-    date_time: datetime.datetime
-    AI_objective_answer: str
-    AI_personalized_answer: str
 
 # FastAPIアプリケーションのインスタンスを作成
 app = FastAPI()
@@ -48,3 +35,4 @@ app = FastAPI()
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     data = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
     return ChatsResponse(data)
+    # もともとdataはresponse_modelに適合しているが、一応、明示的にresponse_modelに変換しておく。
