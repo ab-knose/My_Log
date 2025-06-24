@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import datetime
 # 自作のmodels, schemas, crud
 from models import ChatsModel
-from schemas import ChatsResponse
+from schemas import *
 # from crud import *
 
 # データベースのURLを設定　
@@ -33,11 +33,30 @@ app = FastAPI()
 def get_root():
     return {"message": "Welcome to the My Log app!"}
 
-# chastsテーブルからuser_idを指定してchatデータを取得するAPI
-# user_id = user001をブラウザやポストマンで入力してテストせよ。
-@app.get("/chats/{user_id}", response_model=ChatsResponse)
+# chatsテーブルから単一のchatデータを取得するAPI
+# 仕様書には無いが、テスト用に作っておく。エンドポイントが単数であることに注意。
+@app.get("/chat/{user_id}", response_model=ChatResponse)
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     data = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
-    return data
-    # return ChatsResponse(data)
+    return ChatResponse(data)
     # もともとdataはresponse_modelに適合しているが、一応、明示的にresponse_modelに変換しておく。
+
+# chatsテーブルから複数のchatデータを取得するAPI
+@app.get("/chats/{user_id}", response_model=ChatsResponse)
+def get_chats(user_id: str, db_session: Session = Depends(get_db_session)):
+    data = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
+    return ChatsResponse(chat=data)
+
+# chatsテーブルに単一のchatデータを登録するAPI
+@app.post("/chats/", response_model=ChatResponse)
+def create_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_session)):
+    db_chat = ChatsModel(
+        user_id=chat_request.user_id,
+        date_time=chat_request.date_time,
+        AI_objective_answer=chat_request.AI_objective_answer,
+        AI_personalized_answer=chat_request.AI_personalized_answer
+    )  # chats DBに登録するためのインスタンス。chat_requestから必要な属性を取り出して設定する。
+    db_session.add(db_chat)
+    db_session.commit()
+    db_session.refresh(db_chat)
+    return ChatResponse(chat=db_chat)
