@@ -5,9 +5,6 @@ from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
 import datetime
 
-# FastAPIアプリケーションのインスタンスを作成
-app = FastAPI()
-
 # DB接続設定
 #DATABASE_URL要修正
 DATABASE_URL = "mysql+pymysql://admin:Digitaldev1@group1-chats.c7c4ksi06r6a.ap-southeast-2.rds.amazonaws.com:3306/group1"
@@ -30,6 +27,10 @@ class ChatsModel(Base):
     # user_prompt = Column(String)
     AI_objective_answer = Column(String)
     AI_personalized_answer = Column(String)
+"""
+2025/06/24現在、chatsテーブルにはuser_promptは存在しないため、コメントアウトした。
+後ほどchatsテーブルとともに修正すべし。
+"""
 
 # DB_chatsのレスポンススキーマ定義
 class ChatsResponse(BaseModel):
@@ -37,6 +38,9 @@ class ChatsResponse(BaseModel):
     date_time: datetime.datetime
     AI_objective_answer: str
     AI_personalized_answer: str
+
+# FastAPIアプリケーションのインスタンスを作成
+app = FastAPI()
 
 # DB test
 @app.get("/chats/{user_id}", response_model=ChatsResponse)
