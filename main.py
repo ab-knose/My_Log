@@ -37,15 +37,15 @@ def get_root():
 # 仕様書には無いが、テスト用に作っておく。エンドポイントに注意。
 @app.get("/chats/single/{user_id}", response_model=ChatResponse)
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
-    data = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
-    return ChatResponse(data)
+    db_chat = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
+    return ChatResponse(chat=db_chat)
     # もともとdataはresponse_modelに適合しているが、一応、明示的にresponse_modelに変換しておく。
 
 # chatsテーブルから複数のchatデータを取得するAPI
 @app.get("/chats/{user_id}", response_model=ChatsResponse)
 def get_chats(user_id: str, db_session: Session = Depends(get_db_session)):
-    data = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
-    return ChatsResponse(chat=data)
+    db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
+    return ChatsResponse(chats=db_chats)
 
 # chatsテーブルに単一のchatデータを登録するAPI
 @app.post("/chats/", response_model=ChatResponse)
