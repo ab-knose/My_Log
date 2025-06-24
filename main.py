@@ -9,7 +9,7 @@ import datetime
 # 自作のmodels, schemas, crud
 from models import ChatsModel
 from schemas import ChatsResponse
-from crud import *
+# from crud import *
 
 # データベースのURLを設定　
 # [要対応？]DATABASE_URL が研修で指定されている形式と違うらしい？
@@ -29,10 +29,15 @@ def get_db_session():
 # FastAPIアプリケーションのインスタンスを作成
 app = FastAPI()
 
-# DB test
-@app.get("/chats/{user_id}", response_model=ChatsResponse)
+@app.get("/")
+def get_root():
+    return {"message": "Welcome to the My Log app!"}
+
+# chastsテーブルからuser_idを指定してchatデータを取得するAPI
 # user_id = user001をブラウザやポストマンで入力してテストせよ。
+@app.get("/chats/{user_id}", response_model=ChatsResponse)
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     data = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
-    return ChatsResponse(data)
+    return data
+    # return ChatsResponse(data)
     # もともとdataはresponse_modelに適合しているが、一応、明示的にresponse_modelに変換しておく。
