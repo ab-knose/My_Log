@@ -2,7 +2,6 @@
 FastAPIのrequest, responseのスキーマ定義を行うファイル。
 """
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException, Depends
 import datetime
 
 # DB_chatsのレスポンススキーマ
@@ -30,6 +29,6 @@ class ChatResponse(BaseModel):
     chat: Chat
 
 # 複数のchatをchatsテーブルから取得するget用のレスポンススキーマ
-class ChatsResponse(BaseModel):
+class ChatsResponse(Chats):
     # message: str  # Responseにメッセージを付け加えたい場合はコメントアウトを外す
-    chats: Chats
+    pass

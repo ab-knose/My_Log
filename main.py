@@ -34,8 +34,8 @@ def get_root():
     return {"message": "Welcome to the My Log app!"}
 
 # chatsテーブルから単一のchatデータを取得するAPI
-# 仕様書には無いが、テスト用に作っておく。エンドポイントが単数であることに注意。
-@app.get("/chat/{user_id}", response_model=ChatResponse)
+# 仕様書には無いが、テスト用に作っておく。エンドポイントに注意。
+@app.get("/chats/single/{user_id}", response_model=ChatResponse)
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     data = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
     return ChatResponse(data)
