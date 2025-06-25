@@ -51,7 +51,7 @@ class SummariesResponse(BaseModel):
     user_id: str
     date: datetime.date
     summary: str
-    
+
 
 # DB test
 @app.get("/chats/{user_id}", response_model=ChatsResponse)
