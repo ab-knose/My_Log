@@ -28,5 +28,6 @@ pip install -r .\requirements.txt
 deactivate
 
 <!-- 仮想環境に入った状態でアプリを立ち上げる -->
+<!-- mainは変更 -->
 
 uvicorn main:app --reload
