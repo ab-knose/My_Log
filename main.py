@@ -52,8 +52,7 @@ def get_root():
 @app.get("/chats/single/{user_id}", response_model=ChatResponse)
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     db_chat = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
-    print()
-    return ChatResponse(chat=Chat(db_chat))
+    return ChatResponse(chat=Chat(user_id=db_chat.user_id, date_time=db_chat.date_time, ))
     # もともとdataはresponse_modelに適合しているが、一応、明示的にresponse_modelに変換しておく。
 
 
