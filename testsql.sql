@@ -6,7 +6,13 @@
 --     AI_personalized_answer Text
 -- );
 
--- show databases;
+-- show databases
 
-insert into group1.chats (user_id, date_time, AI_objective_answer, AI_personalized_answer)
-values ('user001', '2025-06-24 14:00:00', 'samplesamplesamplesample', 'samplesamplesamplesample');
+create table group1.summaries(
+	user_ud varchar(255) not null,
+    date_time datetime not null,
+    summary text
+);
+
+-- insert into group1.chats (user_id, date_time, AI_objective_answer, AI_personalized_answer)
+-- values ('user001', '2025-06-24 14:00:00', 'samplesamplesamplesample', 'samplesamplesamplesample');
