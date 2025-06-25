@@ -1,12 +1,18 @@
 -- create schema group1;
--- create table group1.chats(
--- 	user_id varchar(255) not null,
---     date_time DATETIME not null,
---     AI_objective_answer Text,
---     AI_personalized_answer Text
--- );
+create table group1.chats(
+	user_id varchar(255) not null,
+    date_time DATETIME not null,
+    user_prompt varchar(225),
+    AI_objective_answer Text,
+    AI_personalized_answer Text,
+    primary key (user_id, date_time)
+);
 select * from group1.chats;
 -- show databases
+drop table group1.chats;
+
+
+
 show columns from group1.summaries;
 ALTER TABLE group1.summaries RENAME COLUMN date_time TO date;
 
@@ -16,6 +22,8 @@ create table group1.summaries(
     date_time datetime not null,
     summary text
 );
+
+alter table group1.summaries add primary key(user_id, date);
 
 insert into group1.summaries (user_id, date_time, summary)
 values ('user001', '2025-06-24 14:00:00', 'summarysummarysummarysummarysummary');
@@ -48,6 +56,7 @@ create table group1.EF(
 
 insert into group1.EF(dimension, sub_dimension, detailed_category, class, content)
 values(1, 1, 'sample_detailed_category', 5, 'sample_content');
+alter table group1.EF add primary key(content);
 select * from group1.EF;
 
 create table group1.EPRs(
@@ -63,7 +72,7 @@ create table group1.EPRs(
 
 insert into group1.EPRs(user_id, project_name, start_date, goal1, goal2, goal3, goal4)
 values('user001', 'sample_project_name', '2025-06-24', 'goal1', 'goal2', 'goal3', 'goal4');
-
+alter table group1.EPRs add primary key(user_id, start_date);
 select * from group1.EPRs;
 
 create table group1.quizzes(
@@ -78,7 +87,7 @@ create table group1.quizzes(
 
 insert into group1.quizzes(id, quiz, answer, answer1, answer2, answer3, answer4)
 values(1, 'sample quizz?', 'correct answer', 'option1', 'option2', 'option3', 'option4');
-
+alter table group1.quizzes add primary key(id);
 select * from group1.quizzes;
 
 create table group1.users_last_action_date(
@@ -89,7 +98,7 @@ create table group1.users_last_action_date(
 
 insert into group1.users_last_action_date(user_id, last_login_date, last_quiz_answer_date)
 values('user001', '2025-06-24', '2025-06-24');
-
+alter table group1.users_last_action_date add primary key(user_id);
 select * from group1.users_last_action_date;
 -- insert into group1.chats (user_id, date_time, AI_objective_answer, AI_personalized_answer)
 -- values ('user001', '2025-06-24 14:00:00', 'samplesamplesamplesample', 'samplesamplesamplesample');
