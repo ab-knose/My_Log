@@ -52,10 +52,10 @@ def get_root():
 @app.get("/chats/single/{user_id}", response_model=ChatResponse)
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     db_chat = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
-    print()
     chat = Chat(
         user_id=db_chat.user_id,
         date_time=db_chat.date_time,
+        user_prompt=db_chat.user_prompt,
         AI_objective_answer=db_chat.AI_objective_answer,
         AI_personalized_answer=db_chat.AI_personalized_answer
     )
@@ -69,9 +69,29 @@ def get_chats(user_id: str, db_session: Session = Depends(get_db_session)):
     chats = [Chat(
         user_id=db_chats[i].user_id,
         date_time=db_chats[i].date_time,
+        user_prompt=db_chats[i].user_prompt,
         AI_objective_answer=db_chats[i].AI_objective_answer,
         AI_personalized_answer=db_chats[i].AI_personalized_answer
     ) for i in range(len(db_chats))]  # db_chatsの各要素をChatスキーマに変換
+
+    return ChatsResponse(chats=chats)
+
+# chatsテーブルからすべてのchatデータを削除するAPI
+"""※危険！使う時は全員の同意を得てからにせよ。"""
+@app.delete("/chats", response_model=ChatsResponse)
+def delete_all_chats(db_session: Session = Depends(get_db_session)):
+    db_chats = db_session.query(ChatsModel).all()
+    chats = [
+        Chat(
+            user_id=db_chats[i].user_id,
+            date_time=db_chats[i].date_time,
+            user_prompt=db_chats[i].user_prompt,
+            AI_objective_answer=db_chats[i].AI_objective_answer,
+            AI_personalized_answer=db_chats[i].AI_personalized_answer
+        ) for i in range(len(db_chats))
+    ]  # db_chatsの各要素をChatスキーマに変換
+    db_session.query(ChatsModel).delete()  # 全てのchatデータを削除
+    db_session.commit()  # 変更をコミット
 
     return ChatsResponse(chats=chats)
 
@@ -81,6 +101,7 @@ def post_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_se
     db_chat = ChatsModel(
         user_id=chat_request.user_id,
         date_time=chat_request.date_time,
+        user_prompt=chat_request.user_prompt,
         AI_objective_answer=chat_request.AI_objective_answer,
         AI_personalized_answer=chat_request.AI_personalized_answer
     )  # chats DBに登録するためのインスタンス。chat_requestから必要な属性を取り出して設定する。
@@ -105,11 +126,13 @@ def get_summary(user_id: str, db_session: Session = Depends(get_db_session)):
 @app.get("/summaries/{user_id}", response_model=SummariesResponse)
 def get_summaries(user_id: str, db_session: Session = Depends(get_db_session)):
     db_summaries = db_session.query(SummariesModel).filter(SummariesModel.user_id == user_id).all()
-    summaries = [Summary(
-        user_id=db_summaries[i].user_id,
-        date=db_summaries[i].date,
-        summary=db_summaries[i].summary
-    ) for i in range(len(db_summaries))]  # db_summariesの各要素をSummaryスキーマに変換
+    summaries = [
+        Summary(
+            user_id=db_summaries[i].user_id,
+            date=db_summaries[i].date,
+            summary=db_summaries[i].summary
+        ) for i in range(len(db_summaries))
+    ]  # db_summariesの各要素をSummaryスキーマに変換
 
     return SummariesResponse(summaries=summaries)
 
@@ -125,3 +148,7 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
     db_session.commit()
     db_session.refresh(db_summary)
     return SummaryResponse(summary=summary_request)
+
+
+# @app.post("create_reply/objective")
+# def create_objective_reply(chat_request: ChatRequest, db_session: Session = Depends(get_db_session)):
