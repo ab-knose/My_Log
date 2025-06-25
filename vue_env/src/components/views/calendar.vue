@@ -23,11 +23,12 @@ interface CalendarEvent {
   //class: string
 }
 
+//vueカレンダーで必要な情報を渡す
 export default defineComponent({
   components: { VueCal },
   setup() {
+    //振り返りを行った日付を取得
     const labeledData = ref<string[]>([])
-
     const getLabeledData = async (user_id: string) => {
       try {
         const response = await axios.get(`http://127.0.0.1:8000/chats/labeled_dates/${user_id}`)
@@ -38,6 +39,7 @@ export default defineComponent({
       }
     }
 
+    //APIから取得した日付をvueカレンダーで表示するための形式に変換
     function yearsToEventArray(years: string[]): { start: string; end: string }[] {
       return years.map(year => ({
         start: year,
@@ -46,8 +48,8 @@ export default defineComponent({
     }
 
     const events = ref<CalendarEvent[]>([])
-
     onMounted(async () => {
+      //TODO: ユーザーIDをログイン中のユーザのものに変更すること
       await getLabeledData('user001')
       events.value = yearsToEventArray(labeledData.value)
     })
