@@ -31,3 +31,9 @@ deactivate
 <!-- mainは変更 -->
 
 uvicorn main:app --reload
+
+<!-- github pycacheをコミットしないために -->
+
+git rm -r --cached **pycache**/
+
+<!-- テストたくみ -->
