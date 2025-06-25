@@ -31,12 +31,25 @@ class ChatsModel(Base):
     AI_objective_answer = Column(String)
     AI_personalized_answer = Column(String)
 
-# DB_chatsのレスポンススキーマ定義
-class ChatsResponse(BaseModel):
+# chatsの中の単一のchatを表すスキーマ。
+# これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
+class Chat(BaseModel):
     user_id: str
     date_time: datetime.datetime
     AI_objective_answer: str
     AI_personalized_answer: str
+
+# 複数のchatをリストとして持つスキーマ。
+# これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
+class Chats(BaseModel):
+    chats: list[Chat]
+
+# DB_chatsのレスポンススキーマ定義
+class ChatResponse(BaseModel):
+    chat: Chat
+
+class ChatsResponse(BaseModel):
+    chats: list[Chat]
 
 # DB test
 @app.get("/chats/{user_id}", response_model=ChatsResponse)
