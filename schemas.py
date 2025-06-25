@@ -14,11 +14,6 @@ class Chat(BaseModel):
     AI_objective_answer: str
     AI_personalized_answer: str
 
-# 複数のchatをリストとして持つスキーマ。
-# これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
-class Chats(BaseModel):
-    chats: list[Chat]
-
 # chatをchatsテーブルに登録するpost用のリクエストスキーマ
 class ChatRequest(Chat):
     pass  # Chatと属性は全く同じだが、Request用のスキーマであることを明示するために定義している。
@@ -29,6 +24,6 @@ class ChatResponse(BaseModel):
     chat: Chat
 
 # 複数のchatをchatsテーブルから取得するget用のレスポンススキーマ
-class ChatsResponse(Chats):
+class ChatsResponse(BaseModel):
     # message: str  # Responseにメッセージを付け加えたい場合はコメントアウトを外す
-    pass
+    chats: list[Chat]
