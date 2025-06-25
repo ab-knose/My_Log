@@ -44,3 +44,12 @@ class ChatsResponse(BaseModel):
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     data = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
     return data
+
+# post_chat
+@app.post("/chats", response_model=ChatsResponse)
+def post_chat(chat: ChatsResponse, db_session: Session = Depends(get_db_session)):
+    db_chat = ChatsModel(chat)
+    db_session.add(db_chat)
+    db_session.commit()
+    db_session.refresh(db_chat)
+    return db_chat
