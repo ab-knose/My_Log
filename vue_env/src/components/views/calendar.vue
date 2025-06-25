@@ -46,7 +46,6 @@ export default defineComponent({
         end: year
       }));
     }
-
     const events = ref<CalendarEvent[]>([])
     onMounted(async () => {
       //TODO: ユーザーIDをログイン中のユーザのものに変更すること
@@ -71,9 +70,9 @@ export default defineComponent({
 
 <style>
 /* マーク用のカスタムスタイル */
-.marked-event {
+/* .marked-event {
   background: red !important;
   color: red !important;
   border-radius: 50%;
-}
+} */
 </style>
