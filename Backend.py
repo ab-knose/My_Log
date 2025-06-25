@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException, Depends
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
 import datetime
+# from datetime import datetime, date
 
 # FastAPIアプリケーションのインスタンスを作成
 app = FastAPI()
@@ -35,7 +36,7 @@ class ChatsModel(Base):
 class SummariesModel(Base):
     __tablename__ = "summaries" # テーブル名
     user_id = Column(Integer, primary_key=True, index=True) # 主キー
-    date = Column(DateTime.date, primary_key=True, index=True) # 日時
+    date = Column(Date, primary_key=True, index=True) # 日時（DateTimeに修正）
     summary = Column(String)
 
 # DB_chatsのレスポンススキーマ定義
@@ -69,13 +70,13 @@ def post_chat(chat: ChatsResponse, db_session: Session = Depends(get_db_session)
     return db_chat
 
 # get_summaries
-@app.get("/chats/summaries", response_model=list[SummariesModel])
+@app.get("/summaries", response_model=list[SummariesModel])
 def get_summaries(db_session: Session = Depends(get_db_session)):
     data = db_session.query(SummariesModel).all()
     return data
 
 # post_summaries
-@app.post("/chats/summaries", response_model=SummariesResponse)
+@app.post("/summaries", response_model=SummariesResponse)
 def post_summary(summary: SummariesResponse, db_session: Session = Depends(get_db_session)):
     db_summary = SummariesModel(summary)
     db_session.add(db_summary)
