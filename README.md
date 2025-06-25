@@ -39,3 +39,12 @@ git rm -r --cached **pycache**/
 <!-- テストたくみ -->
 
 now
+
+<!-- Vue環境セットアップ-->
+npm create vite@latest vue_env
+cd vue_env
+npm install
+npm run dev
+
+npm install axios
+npm install vue-router
