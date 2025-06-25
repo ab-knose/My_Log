@@ -35,3 +35,5 @@ uvicorn main:app --reload
 <!-- github pycacheをコミットしないために -->
 
 git rm -r --cached **pycache**/
+
+<!-- テストたくみ -->
