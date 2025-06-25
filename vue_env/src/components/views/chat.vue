@@ -11,7 +11,7 @@ const sendMessage = () => {
     messages.value.push({ sender: "AI", text: "こんにちは！ご質問ありがとうございます。" });
   }, 500);
   userInput.value = "";
-};// メッセージを送信する関数
+};// a
 </script>
 
 <template>
