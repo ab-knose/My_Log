@@ -7,12 +7,12 @@ const responseData = ref(null);
 
 const fetchData = async () => {
   try {
-    const response = await axios.get("http://localhost:51731/"); // URLを適宜変更してください
+    const response = await axios.get("http://127.0.0.1:8000/chats/single/user001"); // URLを適宜変更してください
     responseData.value = response.data;
   } catch (error) {
     console.error(error);
     responseData.value = "エラーが発生しました";
-  }
+}
 };
 </script>
 
