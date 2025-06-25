@@ -7,9 +7,14 @@ from sqlalchemy.orm import sessionmaker, Session
 # general
 import datetime
 # 自作のmodels, schemas, crud
-from models import ChatsModel
-from schemas import *
+# from models import ChatsModel
+from schemas import Chat, Chats, ChatResponse, ChatsResponse, ChatRequest
 # from crud import *
+
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 # データベースのURLを設定　
 # [要対応？]DATABASE_URL が研修で指定されている形式と違うらしい？
@@ -26,6 +31,15 @@ def get_db_session():
     finally:
         db_session.close()
 
+# DBモデル定義
+class ChatsModel(Base):
+    __tablename__ = "chats" # テーブル名
+    user_id = Column(Integer, primary_key=True, index=True)
+    date_time = Column(DateTime, primary_key=True, index=True)
+    # user_prompt = Column(String)
+    AI_objective_answer = Column(String)
+    AI_personalized_answer = Column(String)
+
 # FastAPIアプリケーションのインスタンスを作成
 app = FastAPI()
 
@@ -38,10 +52,14 @@ def get_root():
 @app.get("/chats/single/{user_id}", response_model=ChatResponse)
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     db_chat = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
-    return ChatResponse(chat=db_chat)
+    print()
+    return ChatResponse(chat=Chat(db_chat))
     # もともとdataはresponse_modelに適合しているが、一応、明示的にresponse_modelに変換しておく。
 
-# chatsテーブルから複数のchatデータを取得するAPI
+
+
+
+"""# chatsテーブルから複数のchatデータを取得するAPI
 @app.get("/chats/{user_id}", response_model=ChatsResponse)
 def get_chats(user_id: str, db_session: Session = Depends(get_db_session)):
     db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
@@ -59,4 +77,4 @@ def create_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_
     db_session.add(db_chat)
     db_session.commit()
     db_session.refresh(db_chat)
-    return ChatResponse(chat=db_chat)
+    return ChatResponse(chat=db_chat)"""
