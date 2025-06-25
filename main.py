@@ -77,7 +77,7 @@ def get_chats(user_id: str, db_session: Session = Depends(get_db_session)):
 
 # chatsテーブルに単一のchatデータを登録するAPI
 @app.post("/chats", response_model=ChatResponse)
-def create_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_session)):
+def post_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_session)):
     db_chat = ChatsModel(
         user_id=chat_request.user_id,
         date_time=chat_request.date_time,
@@ -89,9 +89,10 @@ def create_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_
     db_session.refresh(db_chat)
     return ChatResponse(chat=chat_request)
 
-# get_summaries
+# summariesテーブルから単一のsummaryデータを取得するAPI
+# 仕様書には無いが、テスト用に作っておく。エンドポイントに注意。
 @app.get("/summaries/single/{user_id}", response_model=SummaryResponse)
-def get_summaries(user_id: str, db_session: Session = Depends(get_db_session)):
+def get_summary(user_id: str, db_session: Session = Depends(get_db_session)):
     db_summary = db_session.query(SummariesModel).filter(SummariesModel.user_id == user_id).first()
     summary = Summary(
         user_id=db_summary.user_id,
@@ -100,11 +101,27 @@ def get_summaries(user_id: str, db_session: Session = Depends(get_db_session)):
     )
     return SummaryResponse(summary=summary)
 
-# post_summaries
-@app.post("/summaries", response_model=SummariesResponse)
-def post_summary(summary: SummariesResponse, db_session: Session = Depends(get_db_session)):
-    db_summary = SummariesModel(summary)
+# summariesテーブルから複数のsummaryデータを取得するAPI
+@app.get("/summaries/{user_id}", response_model=SummariesResponse)
+def get_summaries(user_id: str, db_session: Session = Depends(get_db_session)):
+    db_summaries = db_session.query(SummariesModel).filter(SummariesModel.user_id == user_id).all()
+    summaries = [Summary(
+        user_id=db_summaries[i].user_id,
+        date=db_summaries[i].date,
+        summary=db_summaries[i].summary
+    ) for i in range(len(db_summaries))]  # db_summariesの各要素をSummaryスキーマに変換
+
+    return SummariesResponse(summaries=summaries)
+
+# summariesテーブルに単一のsummaryデータを登録するAPI
+@app.post("/summaries", response_model=SummaryResponse)
+def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(get_db_session)):
+    db_summary = SummariesModel(
+        user_id=summary_request.user_id,
+        date=summary_request.date,
+        summary=summary_request.summary
+    )  # summaries DBに登録するためのインスタンス。summary_requestから必要な属性を取り出して設定する。
     db_session.add(db_summary)
     db_session.commit()
     db_session.refresh(db_summary)
-    return db_summary
+    return SummaryResponse(summary=summary_request)
