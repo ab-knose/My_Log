@@ -1,15 +1,30 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import axios from "axios";
 
 const userInput = ref("");// ユーザーの入力を保持する
 const messages = ref<{ sender: string; text: string }[]>([]);// チャットメッセージのリストを保持する
 
-const sendMessage = () => {
+const sendMessage = async () => {
   if (userInput.value.trim() === "") return;
   messages.value.push({ sender: "user", text: userInput.value });
-  setTimeout(() => {
-    messages.value.push({ sender: "AI", text: "こんにちは！ご質問ありがとうございます。" });
-  }, 500);
+
+  // POSTするデータ
+  const postData = {
+    user_id: "udagawa_sample1",
+    date_time: "2025-06-24T14:00:00",
+    AI_objective_answer: "samplesamplesamplesample",
+    AI_personalized_answer: "samplesamplesamplesample"
+  };
+
+  try {
+    await axios.post("http://127.0.0.1:8000/chats", postData);
+    setTimeout(() => {
+      messages.value.push({ sender: "AI", text: "DBに保存しました。" });
+    }, 500);
+  } catch (error) {
+    messages.value.push({ sender: "AI", text: "エラーが発生しました。" });
+  }
   userInput.value = "";
 };// a
 </script>
