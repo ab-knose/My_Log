@@ -8,8 +8,8 @@ from sqlalchemy.orm import sessionmaker, Session
 # general
 import datetime
 # 自作のmodels, schemas, crud
-from models import ChatsModel
-from schemas import Chat, ChatResponse, ChatsResponse, ChatRequest
+from models import *
+from schemas import *
 # from crud import *
 
 
@@ -88,3 +88,23 @@ def create_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_
     db_session.commit()
     db_session.refresh(db_chat)
     return ChatResponse(chat=chat_request)
+
+# get_summaries
+@app.get("/summaries/single/{user_id}", response_model=SummaryResponse)
+def get_summaries(user_id: str, db_session: Session = Depends(get_db_session)):
+    db_summary = db_session.query(SummariesModel).filter(SummariesModel.user_id == user_id).first()
+    summary = Summary(
+        user_id=db_summary.user_id,
+        date=db_summary.date,
+        summary=db_summary.summary
+    )
+    return SummaryResponse(summary=summary)
+
+# post_summaries
+@app.post("/summaries", response_model=SummariesResponse)
+def post_summary(summary: SummariesResponse, db_session: Session = Depends(get_db_session)):
+    db_summary = SummariesModel(summary)
+    db_session.add(db_summary)
+    db_session.commit()
+    db_session.refresh(db_summary)
+    return db_summary
