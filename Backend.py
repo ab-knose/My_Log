@@ -22,7 +22,7 @@ def get_db_session():
     finally:
         db_session.close()
 
-# DBモデル定義
+# DB_chatsのモデル定義
 class ChatsModel(Base):
     __tablename__ = "chats" # テーブル名
     user_id = Column(Integer, primary_key=True, index=True) # 主キー
@@ -31,12 +31,26 @@ class ChatsModel(Base):
     AI_objective_answer = Column(String)
     AI_personalized_answer = Column(String)
 
+# DB_summariesのモデル定義
+class SummariesModel(Base):
+    __tablename__ = "summaries" # テーブル名
+    user_id = Column(Integer, primary_key=True, index=True) # 主キー
+    date = Column(DateTime.date, primary_key=True, index=True) # 日時
+    summary = Column(String)
+
 # DB_chatsのレスポンススキーマ定義
 class ChatsResponse(BaseModel):
     user_id: str
     date_time: datetime.datetime
     AI_objective_answer: str
     AI_personalized_answer: str
+
+# DB_summariesのレスポンススキーマ定義
+class SummariesResponse(BaseModel):
+    user_id: str
+    date: datetime.date
+    summary: str
+    
 
 # DB test
 @app.get("/chats/{user_id}", response_model=ChatsResponse)
@@ -53,3 +67,19 @@ def post_chat(chat: ChatsResponse, db_session: Session = Depends(get_db_session)
     db_session.commit()
     db_session.refresh(db_chat)
     return db_chat
+
+# get_summaries
+@app.get("/chats/summaries", response_model=list[SummariesModel])
+def get_summaries(db_session: Session = Depends(get_db_session)):
+    data = db_session.query(SummariesModel).all()
+    return data
+
+# post_summaries
+@app.post("/chats/summaries", response_model=SummariesResponse)
+def post_summary(summary: SummariesResponse, db_session: Session = Depends(get_db_session)):
+    db_summary = SummariesModel(summary)
+    db_session.add(db_summary)
+    db_session.commit()
+    db_session.refresh(db_summary)
+    return db_summary
+
