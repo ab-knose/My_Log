@@ -53,7 +53,15 @@ def get_root():
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     db_chat = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
     print()
-    return ChatResponse(chat=Chat(db_chat))
+    chat = Chat(
+        user_id=db_chat.user_id,
+        date_time=db_chat.date_time,
+        AI_objective_answer=db_chat.AI_objective_answer,
+        AI_personalized_answer=db_chat.AI_personalized_answer
+    )
+    # return ChatResponse(chat=Chat(db_chat))
+    return ChatResponse(chat=chat)
+    
     # もともとdataはresponse_modelに適合しているが、一応、明示的にresponse_modelに変換しておく。
 
 
