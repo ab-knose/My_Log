@@ -5,14 +5,23 @@ import axios from "axios";
 const userInput = ref("");// ユーザーの入力を保持する
 const messages = ref<{ sender: string; text: string }[]>([]);// チャットメッセージのリストを保持する
 
+// 日時を "YYYY-MM-DDTHH:MM:SS" 形式で取得
+// ここでは、現在の日時を取得してフォーマットする関数を定
+const pad = (n: number) => n.toString().padStart(2, '0');
+
 const sendMessage = async () => {
   if (userInput.value.trim() === "") return;
   messages.value.push({ sender: "user", text: userInput.value });
 
+  // ボタンを押すたびに最新日時を生成
+  const now = new Date();
+  const date_time = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
   // POSTするデータ
   const postData = {
-    user_id: "udagawa_sample1",
-    date_time: "2025-06-24T14:00:00",
+    user_id: "user001",
+    date_time: date_time, // 最新の日時
+    user_prompt: userInput.value,
     AI_objective_answer: "samplesamplesamplesample",
     AI_personalized_answer: "samplesamplesamplesample"
   };
@@ -23,7 +32,7 @@ const sendMessage = async () => {
       messages.value.push({ sender: "AI", text: "DBに保存しました。" });
     }, 500);
   } catch (error) {
-    messages.value.push({ sender: "AI", text: "エラーが発生しました。" });
+    messages.value.push({ sender: "AI", text: "会話内容がDBに保存されませんでした。" });
   }
   userInput.value = "";
 };// a
