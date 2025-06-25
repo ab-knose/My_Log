@@ -7,7 +7,7 @@ const responseData = ref(null);
 
 const fetchData = async () => {
   try {
-    const response = await axios.get("http://localhost:5173/"); // URLを適宜変更してください
+    const response = await axios.get("http://localhost:51731/"); // URLを適宜変更してください
     responseData.value = response.data;
   } catch (error) {
     console.error(error);
