@@ -5,6 +5,7 @@ __pycache__/
 *.db
 *.sqlite
 *.log
+*.pyc
 
 venv/
 env/

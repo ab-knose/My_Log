@@ -149,6 +149,16 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
     db_session.refresh(db_summary)
     return SummaryResponse(summary=summary_request)
 
+# get_labeled_dates
+@app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
+def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
+    db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
+    # 日付だけを抽出し、重複をなくす
+    labeled_dates = list({chat.date_time.date() for chat in db_chats})
+    labeled_dates.sort()
+    return labeled_dates
+
+
 
 # @app.post("create_reply/objective")
 # def create_objective_reply(chat_request: ChatRequest, db_session: Session = Depends(get_db_session)):
