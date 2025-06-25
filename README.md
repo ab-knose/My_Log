@@ -37,3 +37,5 @@ uvicorn main:app --reload
 git rm -r --cached **pycache**/
 
 <!-- テストたくみ -->
+
+now
