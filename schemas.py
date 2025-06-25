@@ -11,7 +11,7 @@ import datetime
 class Chat(BaseModel):
     user_id: str
     date_time: datetime.datetime
-    # user_prompt = Column(String)
+    user_prompt: str
     AI_objective_answer: str
     AI_personalized_answer: str
 
