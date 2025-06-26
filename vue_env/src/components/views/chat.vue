@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import axios from "axios";
+//window.sessionStorage.setItem("user_id", "user001");// ユーザーIDをセッションストレージに保存
 
 const userInput = ref("");// ユーザーの入力を保持する
 const messages = ref<{ sender: string; text: string }[]>([]);// チャットメッセージのリストを保持する
