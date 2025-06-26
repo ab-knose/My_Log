@@ -144,8 +144,21 @@ def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session
 
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
+
+    AI_objective_answer = create_objective_reply(chat_create_request)
     AI_personalized_answer=create_objective_reply(chat_create_request)
-    return ChatCreateResponse(AI_personalized_answer)
+    post_chat(
+        ChatRequest(
+            user_id=chat_create_request.user_id,
+            date_time=chat_create_request.date_time,
+            user_prompt=chat_create_request.user_prompt,
+            AI_objective_answer=AI_objective_answer,
+            AI_personalized_answer=AI_personalized_answer
+        ),
+        db_session=db_session
+    ).chat.AI_personalized_answer  # chats DBに登録したAI_personalized_answerを再取得。
+
+    return ChatCreateResponse(AI_personalized_answer=AI_personalized_answer)
 
 def create_objective_reply(chat_create_request: ChatCreateRequest):
 
@@ -218,6 +231,6 @@ def get_bedrock_reply(user_prompt: str) -> str:
     return answer
 
 @app.post("/create_reply/objective", response_model= BedrockResponse)
-def create_objective_reply(chat_request: BedrockRequest, db_session: Session = Depends(get_db_session)):
+def create_objective_reply2(chat_request: BedrockRequest, db_session: Session = Depends(get_db_session)):
     ai_objective_answer = get_bedrock_reply(chat_request.user_prompt)
     return BedrockResponse(message="Objective reply created", answer=ai_objective_answer)
