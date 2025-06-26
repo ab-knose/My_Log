@@ -5,13 +5,13 @@ from pydantic import BaseModel
 import datetime
 
 
-""" chats DBのスキーマ定義 """
+""" chats DBと通信するためのFastAPIスキーマ定義 """
 # chatsの中の単一のchatを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Chat(BaseModel):
     user_id: str
     date_time: datetime.datetime
-    # user_prompt = Column(String)
+    user_prompt: str
     AI_objective_answer: str
     AI_personalized_answer: str
 
@@ -30,7 +30,7 @@ class ChatsResponse(BaseModel):
     chats: list[Chat]
 
 
-""" summaries DBのスキーマ定義 """
+""" summaries DBと通信するためのFastAPIスキーマ定義 """
 # summariesの中の単一のsummaryを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Summary(BaseModel):
@@ -51,6 +51,7 @@ class SummaryResponse(BaseModel):
 class SummariesResponse(BaseModel):
     summaries: list[Summary]
 
+
 #ラベルを付けた日を取得するためのリクエストスキーマ
 class LabeledDatesRequest(BaseModel):
     user_id: str
@@ -59,3 +60,24 @@ class LabeledDatesRequest(BaseModel):
 # ラベルを付けた日を取得するためのレスポンススキーマ
 class LabeledDatesResponse(BaseModel):
     labeled_dates: list[datetime.date]
+
+
+class BedrockResponse(BaseModel):
+    message: str  # Bedrockからの応答メッセージを含む
+    answer: str  # Bedrockからの回答内容を含む
+
+class BedrockRequest(BaseModel):
+    user_id: str  # ユーザーIDを含む
+    date_time: datetime.datetime  # 日時を含む
+    user_prompt: str  # ユーザーからのプロンプトを含む
+
+
+"""Bedrockへの命令をフロントエンドから受け取るためのFastAPIスキーマ定義"""
+class ChatCreateRequest(BaseModel):
+    user_id: str
+    date_time: datetime.datetime
+    user_prompt: str
+
+class ChatCreateResponse(BaseModel):
+    AI_personalized_answer: str
+

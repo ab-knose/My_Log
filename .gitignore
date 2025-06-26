@@ -5,6 +5,9 @@ __pycache__/
 *.db
 *.sqlite
 *.log
+*.pyc
+*.env
+fastapi_handson.py
 
 venv/
 env/

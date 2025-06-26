@@ -7,16 +7,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 # general
 import datetime
-import random
 # 自作のmodels, schemas, crud, utils
 from models import *
 from schemas import *
 # from crud import *
 from utils import *
-
+import boto3
+import json
+from dotenv import load_dotenv
+import os
 
 """DBの設定"""
-# データベースのURLを設定
+# データベースのURLを設定　
 # [要対応？]DATABASE_URL が研修で指定されている形式と違うらしい？
 DATABASE_URL = "mysql+pymysql://admin:Digitaldev1@group1-chats.c7c4ksi06r6a.ap-southeast-2.rds.amazonaws.com:3306/group1"
 
@@ -31,7 +33,44 @@ def get_db_session():
     finally:
         db_session.close()
 
+def get_bedrock_reply(prompt: str) -> str:
+    load_dotenv()  # .envファイルから環境変数を読み込む
+    aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")  # 環境変数からアクセスキーを取得
+    aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")  # 環境変数からシークレットキーを取得
+    client = boto3.client(
+        'bedrock-runtime',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name="us-east-1"
+    )
 
+    # EPR/EFを呼び出すAPIを呼び出す or 引数?
+    EF = "あなたはユーザーの応答を評価するAIです" 
+    prompt = f"{EF}\n{prompt}"
+
+    body = json.dumps(
+        {
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 1000,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        }
+    )
+
+    # AIへリクエストを送信
+    response = client.invoke_model(
+        modelId="anthropic.claude-3-5-sonnet-20240620-v1:0", # Claude 3.5 Sonnet
+        body=body
+    )
+    
+    response_body = json.loads(response.get('body').read())
+    answer = response_body["content"][0]["text"]
+    
+    return answer
 
 """FastAPIの準備"""
 # FastAPIアプリケーションのインスタンスを作成
@@ -120,7 +159,6 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
     return SummaryResponse(summary=summary_request)
 
 
-# 回答した日を重複なしで取得するAPI
 # chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
 @app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
 def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
@@ -131,24 +169,8 @@ def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session
     return labeled_dates
 
 
-@app.post("/create_reply", response_model=ChatCreateResponse)
-def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
-    return ChatCreateResponse(AI_personalized_answer=create_objective_reply(chat_create_request))
 
-def create_objective_reply(chat_create_request: ChatCreateRequest):
-    return stub()
-
-def stub():
-    ls = [
-        "ハチは地球上で最も重要な生物と呼ばれています。",
-        "富士山は日本で最も高い山で、標高は3,776メートルです。",
-        "タコには3つの心臓があります。",
-        "シロクマの肌は実は黒色です。",
-        "カタツムリの歯の数は1万本以上あります。",
-        "バナナはベリー類に分類されます。",
-        "キリンの首には人間と同じ数の骨（7個）があります。",
-        "オウムは自分の名前を認識できることがあります。",
-        "地球上で最も古い木は約5,000歳です。",
-        "カメレオンは舌を体の2倍以上の長さまで伸ばせます。"
-    ]
-    return ls[random.randint(0, len(ls) - 1)]
+@app.post("/create_reply/objective", response_model= BedrockResponse)
+def create_objective_reply(chat_request: BedrockRequest, db_session: Session = Depends(get_db_session)):
+    ai_answer = get_bedrock_reply(chat_request.user_prompt)
+    return BedrockResponse(message="Objective reply created", answer=ai_answer)
