@@ -6,7 +6,7 @@ import datetime
 
 
 """ chats DBと通信するためのFastAPIスキーマ定義 """
-""" chats DBと通信するためのFastAPIスキーマ定義 """
+
 # chatsの中の単一のchatを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Chat(BaseModel):
@@ -32,8 +32,12 @@ class ChatsResponse(BaseModel):
     chats: list[Chat]
 
 
+<<<<<<< test_ono
 """ summaries DBと通信するためのFastAPIスキーマ定義 """
 """ summaries DBと通信するためのFastAPIスキーマ定義 """
+=======
+"""summaries DBと通信するためのFastAPIスキーマ定義"""
+>>>>>>> main
 # summariesの中の単一のsummaryを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Summary(BaseModel):
@@ -54,8 +58,12 @@ class SummaryResponse(BaseModel):
 class SummariesResponse(BaseModel):
     summaries: list[Summary]
 
+<<<<<<< test_ono
 
 
+=======
+"""チャットをした日付"""
+>>>>>>> main
 #ラベルを付けた日を取得するためのリクエストスキーマ
 class LabeledDatesRequest(BaseModel):
     user_id: str
@@ -83,6 +91,7 @@ class QuizResponse(BaseModel):
     quiz: Quiz | None = None
     message: str | None = None
 
+"""Bedrockと通信するためのFastAPIスキーマ定義"""
 class BedrockResponse(BaseModel):
     message: str  # Bedrockからの応答メッセージを含む
     answer: str  # Bedrockからの回答内容を含む
