@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 # general
 import datetime
+import random
 # 自作のmodels, schemas, crud, utils
 from models import *
 from schemas import *
@@ -15,7 +16,7 @@ from utils import *
 
 
 """DBの設定"""
-# データベースのURLを設定　
+# データベースのURLを設定
 # [要対応？]DATABASE_URL が研修で指定されている形式と違うらしい？
 DATABASE_URL = "mysql+pymysql://admin:Digitaldev1@group1-chats.c7c4ksi06r6a.ap-southeast-2.rds.amazonaws.com:3306/group1"
 
@@ -130,5 +131,45 @@ def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session
 
 
 
-# @app.post("create_reply/objective")
-# def create_objective_reply(chat_request: ChatRequest, db_session: Session = Depends(get_db_session)):
+# chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
+@app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
+def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
+    db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
+    # 日付だけを抽出し、重複をなくす
+    labeled_dates = list({chat.date_time.date() for chat in db_chats})
+    labeled_dates.sort()
+    return labeled_dates
+
+
+
+# chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
+@app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
+def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
+    db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
+    # 日付だけを抽出し、重複をなくす
+    labeled_dates = list({chat.date_time.date() for chat in db_chats})
+    labeled_dates.sort()
+    return labeled_dates
+
+
+@app.post("/create_reply", response_model=ChatCreateResponse)
+def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
+    return ChatCreateResponse(AI_personalized_answer=create_objective_reply(chat_create_request))
+
+def create_objective_reply(chat_create_request: ChatCreateRequest):
+    return stub()
+
+def stub():
+    ls = [
+        "ハチは地球上で最も重要な生物と呼ばれています。",
+        "富士山は日本で最も高い山で、標高は3,776メートルです。",
+        "タコには3つの心臓があります。",
+        "シロクマの肌は実は黒色です。",
+        "カタツムリの歯の数は1万本以上あります。",
+        "バナナはベリー類に分類されます。",
+        "キリンの首には人間と同じ数の骨（7個）があります。",
+        "オウムは自分の名前を認識できることがあります。",
+        "地球上で最も古い木は約5,000歳です。",
+        "カメレオンは舌を体の2倍以上の長さまで伸ばせます。"
+    ]
+    return ls[random.randint(0, len(ls) - 1)]
