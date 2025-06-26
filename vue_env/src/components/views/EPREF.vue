@@ -1,5 +1,6 @@
 <script setup lang="ts">
-//console.log("EPREFコンポーネントが読み込まれました。");
+const user_id = window.sessionStorage.getItem("user_id");
+console.log(user_id);
 </script>
 
 <template>
