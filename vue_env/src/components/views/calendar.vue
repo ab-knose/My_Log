@@ -42,12 +42,13 @@ export default defineComponent({
         // 最終クイズ回答日が今日でなければクイズ表示
         let today = new Date()
         let formattedTodayDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-        if (lastAnswerDate != formattedTodayDate) {
+        if (lastAnswerDate == formattedTodayDate) {
           alert(`最終クイズ回答日と一致`)
         } else {
           alert(`最終クイズ回答日と一致しません`)
         }
 
+        //TODO: クイズ回答終了後
         //クイズ回答日を更新
         putLastQuizAnswereDate(USER_ID).then(() => {
           console.log('クイズ回答日を更新しました')
