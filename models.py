@@ -16,7 +16,7 @@ class ChatsModel(Base):
     __tablename__ = "chats" # テーブル名
     user_id = Column(Integer, primary_key=True, index=True)
     date_time = Column(DateTime, primary_key=True, index=True)
-    # user_prompt = Column(String)
+    user_prompt = Column(String)
     AI_objective_answer = Column(String)
     AI_personalized_answer = Column(String)
 
@@ -27,3 +27,24 @@ class SummariesModel(Base):
     user_id = Column(Integer, primary_key=True, index=True)
     date = Column(Date, primary_key=True, index=True)
     summary = Column(String)
+
+# quizzes DBのモデル定義
+class QuizzesModel(Base):
+    __tablename__ = "quizzes"  # テーブル名
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    quiz = Column(String)
+    answer = Column(String)
+    choice1 = Column(String, primary_key=True, index=True)
+    choice2 = Column(String, primary_key=True, index=True)
+    choice3 = Column(String, primary_key=True, index=True)
+    choice4 = Column(String, primary_key=True, index=True)
+    
+
+# EF DBのモデル定義
+class EFModel(Base):
+    __tablename__ = "EF"  # テーブル名
+    dimension = Column(Integer, nullable=False)
+    sub_dimension = Column(Integer)
+    detailed_category = Column(String)
+    class_ = Column(Integer, nullable=False)  # 'class'は予約語のためclass_
+    content = Column(String, primary_key=True, index=True)
