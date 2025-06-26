@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import datetime
 
 
-""" chats DBのスキーマ定義 """
+""" chats DBと通信するためのFastAPIスキーマ定義 """
 # chatsの中の単一のchatを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Chat(BaseModel):
@@ -30,7 +30,7 @@ class ChatsResponse(BaseModel):
     chats: list[Chat]
 
 
-""" summaries DBのスキーマ定義 """
+""" summaries DBと通信するためのFastAPIスキーマ定義 """
 # summariesの中の単一のsummaryを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Summary(BaseModel):
@@ -48,3 +48,13 @@ class SummaryResponse(BaseModel):
 
 class SummariesResponse(BaseModel):
     summaries: list[Summary]
+
+
+"""Bedrockへの命令をフロントエンドから受け取るためのFastAPIスキーマ定義"""
+class ChatCreateRequest(BaseModel):
+    user_id: str
+    date_time: datetime.datetime
+    user_prompt: str
+
+class ChatCreateResponse(BaseModel):
+    AI_personalized_answer: str
