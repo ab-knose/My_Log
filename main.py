@@ -170,6 +170,7 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
 
 
 # chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
+
 @app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
 def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
     db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
