@@ -69,9 +69,13 @@ def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
 
 
 # chatsテーブルから複数のchatデータを取得するAPI
-@app.get("/chats/{user_id}", response_model=ChatsResponse)
-def get_chats(user_id: str, db_session: Session = Depends(get_db_session)):
-    db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
+@app.get("/chats/{user_id}/{start_date}_{end_date}", response_model=ChatsResponse)
+def get_chats(user_id: str, start_date: str, end_date: str, db_session: Session = Depends(get_db_session)):
+    db_chats = db_session.query(ChatsModel).filter(
+        ChatsModel.user_id == user_id,
+        ChatsModel.date_time >= start_date,
+        ChatsModel.date_time <= end_date
+    ).all()
     chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
 
     return ChatsResponse(chats=chats)
