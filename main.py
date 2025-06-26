@@ -24,8 +24,7 @@ from utils import *
 
 
 
-"""DBの設定"""
-# データベースのURLを設定
+
 """DBの設定"""
 # データベースのURLを設定
 # [要対応？]DATABASE_URL が研修で指定されている形式と違うらしい？
@@ -165,12 +164,7 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
     return SummaryResponse(summary=summary_request)
 
 
-<<<<<<< test_ono
 
-# 回答した日を重複なしで取得するAPI
-=======
->>>>>>> main
-# chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
 # chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
 @app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
 def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
