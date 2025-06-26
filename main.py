@@ -98,14 +98,20 @@ def post_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_se
 # 仕様書には無いが、テスト用に作っておく。エンドポイントに注意。
 @app.get("/summaries/single/{user_id}", response_model=SummaryResponse)
 def get_summary(user_id: str, db_session: Session = Depends(get_db_session)):
+
+
     db_summary = db_session.query(SummariesModel).filter(SummariesModel.user_id == user_id).first()
     return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # db_summaryをSummaryスキーマに変換して返す
 
 
 # summariesテーブルから複数のsummaryデータを取得するAPI
-@app.get("/summaries/{user_id}", response_model=SummariesResponse)
-def get_summaries(user_id: str, db_session: Session = Depends(get_db_session)):
-    db_summaries = db_session.query(SummariesModel).filter(SummariesModel.user_id == user_id).all()
+@app.get("/summaries/{user_id}/{start_date}_{end_date}", response_model=SummariesResponse)
+def get_summaries(user_id: str, start_date: str, end_date: str, db_session: Session = Depends(get_db_session)):
+    db_summaries = db_session.query(SummariesModel).filter(
+        SummariesModel.user_id == user_id,
+        SummariesModel.date >= start_date,
+        SummariesModel.date <= end_date
+    ).all()
     summaries = list(map(convert_summary_model_to_summary_schema, db_summaries))  # db_summariesの各要素をSummaryスキーマに変換
     return SummariesResponse(summaries=summaries)
 
