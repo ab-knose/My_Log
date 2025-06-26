@@ -6,11 +6,13 @@ import datetime
 
 
 """ chats DBと通信するためのFastAPIスキーマ定義 """
+""" chats DBと通信するためのFastAPIスキーマ定義 """
 # chatsの中の単一のchatを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Chat(BaseModel):
     user_id: str
     date_time: datetime.datetime
+    user_prompt: str
     user_prompt: str
     AI_objective_answer: str
     AI_personalized_answer: str
@@ -31,6 +33,7 @@ class ChatsResponse(BaseModel):
 
 
 """ summaries DBと通信するためのFastAPIスキーマ定義 """
+""" summaries DBと通信するためのFastAPIスキーマ定義 """
 # summariesの中の単一のsummaryを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Summary(BaseModel):
@@ -50,6 +53,7 @@ class SummaryResponse(BaseModel):
 # 複数のsummaryをsummariesテーブルから取得するget用のレスポンススキーマ
 class SummariesResponse(BaseModel):
     summaries: list[Summary]
+
 
 
 #ラベルを付けた日を取得するためのリクエストスキーマ
