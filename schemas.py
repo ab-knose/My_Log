@@ -42,14 +42,30 @@ class Summary(BaseModel):
 class SummaryRequest(Summary):
     pass  # Summaryと属性は全く同じだが、Request用のスキーマであることを明示するために定義している。
 
+# summaryをsummariesテーブルから取得するget用のレスポンススキーマ
 class SummaryResponse(BaseModel):
     # message: str  # Responseにメッセージを付け加えたい場合はコメントアウトを外す
     summary: Summary
 
+# 複数のsummaryをsummariesテーブルから取得するget用のレスポンススキーマ
 class SummariesResponse(BaseModel):
     summaries: list[Summary]
 
+<<<<<<< HEAD
 """Bedrockと通信するためのFastAPIスキーマ定義"""
+=======
+
+#ラベルを付けた日を取得するためのリクエストスキーマ
+class LabeledDatesRequest(BaseModel):
+    user_id: str
+    month: int
+
+# ラベルを付けた日を取得するためのレスポンススキーマ
+class LabeledDatesResponse(BaseModel):
+    labeled_dates: list[datetime.date]
+
+
+>>>>>>> d6a46f3ec8404e6dcaf9a03bb93c240b21c5b352
 class BedrockResponse(BaseModel):
     message: str  # Bedrockからの応答メッセージを含む
     answer: str  # Bedrockからの回答内容を含む
