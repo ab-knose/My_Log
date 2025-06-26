@@ -3,5 +3,5 @@
 </script>
 
 <template>
-  <div>EPREF画面</div>
+    <div>EPREF画面</div>
 </template>

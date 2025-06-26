@@ -7,7 +7,7 @@
     </main>
     <footer>
       <nav class="bottom-nav">
-        <button @click="$router.push('/')">カレンダー</button>
+        <button @click="$router.push('/calendar')">カレンダー</button>
         <button @click="$router.push('/chat')">チャット</button>
         <button @click="$router.push('/epref')">EPREF</button>
         <button @click="$router.push('/term_evaluation')">評価</button>
