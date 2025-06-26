@@ -5,12 +5,14 @@ from pydantic import BaseModel
 import datetime
 
 
-"""chats DBと通信するためのFastAPIスキーマ定義"""
+""" chats DBと通信するためのFastAPIスキーマ定義 """
+
 # chatsの中の単一のchatを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Chat(BaseModel):
     user_id: str
     date_time: datetime.datetime
+    user_prompt: str
     user_prompt: str
     AI_objective_answer: str
     AI_personalized_answer: str
@@ -30,7 +32,12 @@ class ChatsResponse(BaseModel):
     chats: list[Chat]
 
 
+<<<<<<< test_ono
+""" summaries DBと通信するためのFastAPIスキーマ定義 """
+""" summaries DBと通信するためのFastAPIスキーマ定義 """
+=======
 """summaries DBと通信するためのFastAPIスキーマ定義"""
+>>>>>>> main
 # summariesの中の単一のsummaryを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Summary(BaseModel):
@@ -51,7 +58,12 @@ class SummaryResponse(BaseModel):
 class SummariesResponse(BaseModel):
     summaries: list[Summary]
 
+<<<<<<< test_ono
+
+
+=======
 """チャットをした日付"""
+>>>>>>> main
 #ラベルを付けた日を取得するためのリクエストスキーマ
 class LabeledDatesRequest(BaseModel):
     user_id: str
@@ -61,6 +73,23 @@ class LabeledDatesRequest(BaseModel):
 class LabeledDatesResponse(BaseModel):
     labeled_dates: list[datetime.date]
 
+""" quizzes DBのスキーマ定義 """
+class Quiz(BaseModel):
+    id: int
+    choice1: datetime.date
+    choice2: datetime.date
+    choice3: datetime.date
+    choice4: datetime.date
+    quiz: str
+    answer: str
+    is_correct: int
+
+class QuizRequest(Quiz):
+    pass
+
+class QuizResponse(BaseModel):
+    quiz: Quiz | None = None
+    message: str | None = None
 
 """Bedrockと通信するためのFastAPIスキーマ定義"""
 class BedrockResponse(BaseModel):
