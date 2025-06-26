@@ -144,7 +144,8 @@ def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session
 
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
-    return ChatCreateResponse(AI_personalized_answer=create_objective_reply(chat_create_request))
+    AI_personalized_answer=create_objective_reply(chat_create_request)
+    return ChatCreateResponse(AI_personalized_answer)
 
 def create_objective_reply(chat_create_request: ChatCreateRequest):
 
@@ -166,7 +167,7 @@ def stub():
     return ls[random.randint(0, len(ls) - 1)]
 
 
-def get_bedrock_reply(prompt: str) -> str:
+def get_bedrock_reply(user_prompt: str) -> str:
     load_dotenv()  # .envファイルから環境変数を読み込む
     aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")  # 環境変数からアクセスキーを取得
     aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")  # 環境変数からシークレットキーを取得
@@ -177,20 +178,32 @@ def get_bedrock_reply(prompt: str) -> str:
         region_name="us-east-1"
     )
 
-    # EPR/EFを呼び出すAPIを呼び出す or 引数?
-    EF = "あなたはユーザーの応答を評価するAIです"
-    prompt = f"{EF}\n{prompt}"
+    # [要変更] EFの内容は別の関数で持ってくるようにする。
+    EF = "1. 日々行動する。2. 他者に配慮する。3. 目標を持つ。4. 自分の感情を理解する。5. 自分の行動を振り返る。6. 他者と協力する。7. 自分の価値観を持つ。8. 健康的な生活を送る。9. 学び続ける。10. 社会に貢献する。"
+    initial_prompt = f"""
+        ユーザーとチャットをしてもらいます。
+        会話の中で、もし以下の[基準]に関連する内容があれば、ユーザーにそれを教えて褒めてください。
+        回答は短文で、あくまで、ユーザーとの気軽なチャットであることを忘れないでください。
+        もしも、[基準]に関連する内容が見つからなかった場合は、ユーザーの入力を受け入れ、自然な会話を続けてください。
+        [基準]：{EF}[基準ここまで]
+    """
+
+    # initial_prompt + 会話の履歴 をBedrockに与えるためのリスト
+    messages = []
+    messages.append({
+        "role": "user",
+        "content": initial_prompt
+    })
+    messages.append({
+        "role": "user",
+        "content": user_prompt
+    })
 
     body = json.dumps(
         {
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": 1000,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
+            "messages": messages
         }
     )
 
@@ -199,9 +212,8 @@ def get_bedrock_reply(prompt: str) -> str:
         modelId="anthropic.claude-3-5-sonnet-20240620-v1:0", # Claude 3.5 Sonnet
         body=body
     )
-
-    response_body = json.loads(response.get('body').read())
-    answer = response_body["content"][0]["text"]
+    response_body = json.loads(response.get('body').read())  # JSON形式でレスポンスを取得
+    answer = response_body["content"][0]["text"]  # JSONから必要な部分を抽出
 
     return answer
 
