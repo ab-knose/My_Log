@@ -120,28 +120,7 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
     return SummaryResponse(summary=summary_request)
 
 
-# chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
-@app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
-def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
-    db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
-    # 日付だけを抽出し、重複をなくす
-    labeled_dates = list({chat.date_time.date() for chat in db_chats})
-    labeled_dates.sort()
-    return labeled_dates
-
-
-
-# chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
-@app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
-def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
-    db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
-    # 日付だけを抽出し、重複をなくす
-    labeled_dates = list({chat.date_time.date() for chat in db_chats})
-    labeled_dates.sort()
-    return labeled_dates
-
-
-
+# 回答した日を重複なしで取得するAPI
 # chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
 @app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
 def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
