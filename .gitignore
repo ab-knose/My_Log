@@ -6,6 +6,8 @@ __pycache__/
 *.sqlite
 *.log
 *.pyc
+*.env
+fastapi_handson.py
 
 venv/
 env/
