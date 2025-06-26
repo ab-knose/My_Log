@@ -32,12 +32,8 @@ class ChatsResponse(BaseModel):
     chats: list[Chat]
 
 
-<<<<<<< test_ono
-""" summaries DBと通信するためのFastAPIスキーマ定義 """
-""" summaries DBと通信するためのFastAPIスキーマ定義 """
-=======
+
 """summaries DBと通信するためのFastAPIスキーマ定義"""
->>>>>>> main
 # summariesの中の単一のsummaryを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Summary(BaseModel):
@@ -58,12 +54,8 @@ class SummaryResponse(BaseModel):
 class SummariesResponse(BaseModel):
     summaries: list[Summary]
 
-<<<<<<< test_ono
 
-
-=======
 """チャットをした日付"""
->>>>>>> main
 #ラベルを付けた日を取得するためのリクエストスキーマ
 class LabeledDatesRequest(BaseModel):
     user_id: str
@@ -76,10 +68,10 @@ class LabeledDatesResponse(BaseModel):
 """ quizzes DBのスキーマ定義 """
 class Quiz(BaseModel):
     id: int
-    choice1: datetime.date
-    choice2: datetime.date
-    choice3: datetime.date
-    choice4: datetime.date
+    choice1: str
+    choice2: str
+    choice3: str
+    choice4: str
     quiz: str
     answer: str
     is_correct: int
