@@ -141,6 +141,7 @@ def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = D
     return ChatCreateResponse(AI_personalized_answer=create_objective_reply(chat_create_request))
 
 def create_objective_reply(chat_create_request: ChatCreateRequest):
+
     return stub()
 
 def stub():
@@ -198,6 +199,7 @@ def get_bedrock_reply(prompt: str) -> str:
 
     return answer
 
+@app.post("/create_reply/objective", response_model= BedrockResponse)
 def create_objective_reply(chat_request: BedrockRequest, db_session: Session = Depends(get_db_session)):
     ai_objective_answer = get_bedrock_reply(chat_request.user_prompt)
     return BedrockResponse(message="Objective reply created", answer=ai_objective_answer)
