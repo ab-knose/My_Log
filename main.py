@@ -14,10 +14,14 @@ import datetime
 import random
 import os
 # 自作のmodels, schemas, crud, utils
+import random
+# 自作のmodels, schemas, crud, utils
 from models import *
 from schemas import *
 # from crud import *
 from utils import *
+from utils import *
+
 
 
 
@@ -40,6 +44,8 @@ def get_db_session():
 
 
 """FastAPIの準備"""
+
+"""FastAPIの準備"""
 # FastAPIアプリケーションのインスタンスを作成
 app = FastAPI()
 
@@ -56,6 +62,8 @@ app.add_middleware(
 
 
 """API定義"""
+
+"""API定義"""
 @app.get("/")
 def get_root():
     return {"message": "Welcome to the My Log app!"}
@@ -65,6 +73,8 @@ def get_root():
 @app.get("/chats/single/{user_id}", response_model=ChatResponse)
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     db_chat = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
+    return ChatResponse(chat=convert_chat_model_to_chat_schema(db_chat))  # db_chatをChatスキーマに変換して返す
+
     return ChatResponse(chat=convert_chat_model_to_chat_schema(db_chat))  # db_chatをChatスキーマに変換して返す
 
 
@@ -90,18 +100,35 @@ def delete_all_chats(db_session: Session = Depends(get_db_session)):
 
     db_session.query(ChatsModel).delete()  # 全てのchatデータを削除
     db_session.commit()  # 変更をコミット
+    chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
 
     return ChatsResponse(chats=chats)
+
+
+# chatsテーブルからすべてのchatデータを削除するAPI
+"""※危険！使う時は全員の同意を得てからにせよ。"""
+@app.delete("/chats", response_model=ChatsResponse)
+def delete_all_chats(db_session: Session = Depends(get_db_session)):
+    db_chats = db_session.query(ChatsModel).all()
+    chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
+
+    db_session.query(ChatsModel).delete()  # 全てのchatデータを削除
+    db_session.commit()  # 変更をコミット
+
+    return ChatsResponse(chats=chats)
+
 
 
 # chatsテーブルに単一のchatデータを登録するAPI
 @app.post("/chats", response_model=ChatResponse)
 def post_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_session)):
     db_chat = convert_chat_schema_to_chat_model(chat_request)  # ChatRequestをChatsModelに変換
+    db_chat = convert_chat_schema_to_chat_model(chat_request)  # ChatRequestをChatsModelに変換
     db_session.add(db_chat)
     db_session.commit()
     db_session.refresh(db_chat)
     return ChatResponse(chat=chat_request)
+
 
 
 # summariesテーブルから単一のsummaryデータを取得するAPI
@@ -111,6 +138,8 @@ def get_summary(user_id: str, db_session: Session = Depends(get_db_session)):
 
 
     db_summary = db_session.query(SummariesModel).filter(SummariesModel.user_id == user_id).first()
+    return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # db_summaryをSummaryスキーマに変換して返す
+
     return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # db_summaryをSummaryスキーマに変換して返す
 
 
@@ -123,17 +152,21 @@ def get_summaries(user_id: str, start_date: str, end_date: str, db_session: Sess
         SummariesModel.date <= end_date
     ).all()
     summaries = list(map(convert_summary_model_to_summary_schema, db_summaries))  # db_summariesの各要素をSummaryスキーマに変換
+    summaries = list(map(convert_summary_model_to_summary_schema, db_summaries))  # db_summariesの各要素をSummaryスキーマに変換
     return SummariesResponse(summaries=summaries)
+
 
 
 # summariesテーブルに単一のsummaryデータを登録するAPI
 @app.post("/summaries", response_model=SummaryResponse)
 def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(get_db_session)):
     db_summary = convert_summary_schema_to_summary_model(summary_request)  # SummaryRequestをSummariesModelに変換
+    db_summary = convert_summary_schema_to_summary_model(summary_request)  # SummaryRequestをSummariesModelに変換
     db_session.add(db_summary)
     db_session.commit()
     db_session.refresh(db_summary)
     return SummaryResponse(summary=summary_request)
+
 
 
 # chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
@@ -145,6 +178,44 @@ def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session
     labeled_dates.sort()
     return labeled_dates
 
+# EFからランダムにクイズを選択し取得するAPI
+from fastapi import Query
+
+@app.get("/quizzes/random", response_model=QuizResponse)
+def get_random_quiz(user_id: str = Query(..., description="User ID", min_length=1), db_session: Session = Depends(get_db_session)):
+    import hashlib
+    import datetime
+
+    today = datetime.date.today()
+
+    # 既に今日クイズに回答しているか確認
+    answered = db_session.query(ChatsModel).filter(
+        ChatsModel.user_id == user_id,
+        ChatsModel.date_time >= datetime.datetime.combine(today, datetime.time.min),
+        ChatsModel.date_time <= datetime.datetime.combine(today, datetime.time.max)
+    ).first()
+    if answered:
+        # 422エラーではなく、200で既に回答済みを返す
+        return QuizResponse(quiz=None, message="Already answered today's quiz")
+
+    quizzes = db_session.query(QuizzesModel).all()
+    if not quizzes:
+        # 404エラーではなく、200でクイズ無しを返す
+        return QuizResponse(quiz=None, message="No quizzes found")
+
+    quiz_count = len(quizzes)
+    # user_idと日付で決定
+    hash_input = f"{user_id}_{today}".encode()
+    hash_value = int(hashlib.sha256(hash_input).hexdigest(), 16)
+    quiz_index = hash_value % quiz_count
+
+    quiz = quizzes[quiz_index]
+    quiz_schema = Quiz(
+        id=quiz.id,
+        question=quiz.question,
+        answer=quiz.answer
+    )
+    return QuizResponse(quiz=quiz_schema, message="OK")
 
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
