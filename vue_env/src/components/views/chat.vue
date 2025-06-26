@@ -28,11 +28,18 @@ onMounted(async () => {
   }
 });
 
+// 今日の日付（YYYY-MM-DD形式）を取得
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, '0');
+const dd = String(today.getDate()).padStart(2, '0');
+const start_date = `${yyyy}-${mm}-${dd}`;
+const end_date = `${yyyy}-${mm}-${dd}`;
 // APIから今日のチャット履歴を取得する関数
 // ここでは、axiosを使用してGETリクエストを送信
 async function getTodaysChats(user_id: string){
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/chats/${user_id}`)
+  const response = await axios.get(`http://127.0.0.1:8000/chats/${user_id}/${start_date}/${end_date}`);
     return response.data 
   }catch (error) {
     console.error(error)
