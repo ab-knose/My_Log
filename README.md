@@ -48,3 +48,4 @@ npm run dev
 
 npm install axios
 npm install vue-router
+npm install vue-cal
