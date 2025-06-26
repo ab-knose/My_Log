@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import axios from "axios";
-//window.sessionStorage.setItem("user_id", "user001");// ユーザーIDをセッションストレージに保存
+window.sessionStorage.setItem("user_id", "user001");// ユーザーIDをセッションストレージに保存
 
+// 初期化時にsessionStorageからmessagesを復元
+const storedMessages = window.sessionStorage.getItem("messages");
+const messages = ref<{ sender: string; text: string }[]>(storedMessages ? JSON.parse(storedMessages) : []);
 const userInput = ref("");// ユーザーの入力を保持する
-const messages = ref<{ sender: string; text: string }[]>([]);// チャットメッセージのリストを保持する
 
 // 日時を "YYYY-MM-DDTHH:MM:SS" 形式で取得
 // ここでは、現在の日時を取得してフォーマットする関数を定
@@ -13,6 +15,7 @@ const pad = (n: number) => n.toString().padStart(2, '0');
 const sendMessage = async () => {
   if (userInput.value.trim() === "") return;
   messages.value.push({ sender: "user", text: userInput.value });
+  window.sessionStorage.setItem("messages", JSON.stringify(messages.value));// userの会話をセッションストレージに保存。messagesの中にはだれが話したかまで入っている。
 
   // ボタンを押すたびに最新日時を生成
   const now = new Date();
@@ -31,9 +34,11 @@ const sendMessage = async () => {
     await axios.post("http://127.0.0.1:8000/chats", postData);
     setTimeout(() => {
       messages.value.push({ sender: "AI", text: "DBに保存しました。" });
+      window.sessionStorage.setItem("messages", JSON.stringify(messages.value));
     }, 500);
   } catch (error) {
     messages.value.push({ sender: "AI", text: "会話内容がDBに保存されませんでした。" });
+    window.sessionStorage.setItem("messages", JSON.stringify(messages.value));
   }
   userInput.value = "";
 };// a
