@@ -49,7 +49,7 @@ class SummaryResponse(BaseModel):
 class SummariesResponse(BaseModel):
     summaries: list[Summary]
 
-<<<<<<< bedrock_nose
+
 class BedrockResponse(BaseModel):
     message: str  # Bedrockからの応答メッセージを含む
     answer: str  # Bedrockからの回答内容を含む
@@ -58,7 +58,7 @@ class BedrockRequest(BaseModel):
     user_id: str  # ユーザーIDを含む
     date_time: datetime.datetime  # 日時を含む
     user_prompt: str  # ユーザーからのプロンプトを含む
-=======
+
 
 """Bedrockへの命令をフロントエンドから受け取るためのFastAPIスキーマ定義"""
 class ChatCreateRequest(BaseModel):
@@ -68,4 +68,4 @@ class ChatCreateRequest(BaseModel):
 
 class ChatCreateResponse(BaseModel):
     AI_personalized_answer: str
->>>>>>> main
+
