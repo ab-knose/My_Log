@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-// ここにロジックを追加できます
+const user_id = window.sessionStorage.getItem("user_id"); 
 </script>
 
 <style scoped>

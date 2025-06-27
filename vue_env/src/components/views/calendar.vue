@@ -26,7 +26,7 @@ interface CalendarEvent {
 var params = new URLSearchParams(window.location.search);
 var code = params.get('code')
 //cognitoのユーザ情報取得
-if(sessionStorage.getItem('sub')==null){
+if(sessionStorage.getItem('user_id')==null){
   const clientId = '5ggulopp4nit1hge4qcpvmackt';
   const endpoint = 'https://ap-southeast-2uwgquxvjv.auth.ap-southeast-2.amazoncognito.com/oauth2/token';
 
@@ -47,10 +47,10 @@ if(sessionStorage.getItem('sub')==null){
     'https://ap-southeast-2uwgquxvjv.auth.ap-southeast-2.amazoncognito.com/oauth2/userInfo',
     { headers: { Authorization: `Bearer ${access_token}` } }
   );
-  sessionStorage.setItem('sub', userInfoRes.data.sub);
+  sessionStorage.setItem('user_id', userInfoRes.data.sub);
 }
 
-const USER_ID = sessionStorage.getItem('sub') // ユーザーIDを定義（後でログイン中のユーザのものに変更すること）
+const USER_ID = sessionStorage.getItem('user_id') // ユーザーIDを定義（後でログイン中のユーザのものに変更すること）
 console.log("user_id(sub):", USER_ID)
 
 //vueカレンダーで必要な情報を使えるようにする
