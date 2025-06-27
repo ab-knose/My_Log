@@ -42,9 +42,6 @@ def get_db_session():
         db_session.close()
 
 
-
-"""FastAPIの準備"""
-
 """FastAPIの準備"""
 # FastAPIアプリケーションのインスタンスを作成
 app = FastAPI()
@@ -60,9 +57,6 @@ app.add_middleware(
 )
 
 
-
-"""API定義"""
-
 """API定義"""
 @app.get("/")
 def get_root():
@@ -73,18 +67,15 @@ def get_root():
 @app.get("/chats/single/{user_id}", response_model=ChatResponse)
 def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
     db_chat = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
-    return ChatResponse(chat=convert_chat_model_to_chat_schema(db_chat))  # db_chatをChatスキーマに変換して返す
-
-    return ChatResponse(chat=convert_chat_model_to_chat_schema(db_chat))  # db_chatをChatスキーマに変換して返す
-
+    return ChatResponse(chat=convert_chat_model_to_chat_schema(db_chat))  # 登録したdb_chatをChatスキーマに変換して返す
 
 # chatsテーブルから複数のchatデータを取得するAPI
 @app.get("/chats/{user_id}/{start_date}_{end_date}", response_model=ChatsResponse)
-def get_chats(user_id: str, start_date: str, end_date: str, db_session: Session = Depends(get_db_session)):
+def get_chats(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session = Depends(get_db_session)):
     db_chats = db_session.query(ChatsModel).filter(
         ChatsModel.user_id == user_id,
-        ChatsModel.date_time >= start_date,
-        ChatsModel.date_time <= end_date
+        ChatsModel.date_time >= datetime.datetime.combine(start_date, datetime.time.min),
+        ChatsModel.date_time <= datetime.datetime.combine(end_date, datetime.time.max)
     ).all()
     chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
 
@@ -103,20 +94,6 @@ def delete_all_chats(db_session: Session = Depends(get_db_session)):
     chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
 
     return ChatsResponse(chats=chats)
-
-
-# chatsテーブルからすべてのchatデータを削除するAPI
-"""※危険！使う時は全員の同意を得てからにせよ。"""
-@app.delete("/chats", response_model=ChatsResponse)
-def delete_all_chats(db_session: Session = Depends(get_db_session)):
-    db_chats = db_session.query(ChatsModel).all()
-    chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
-
-    db_session.query(ChatsModel).delete()  # 全てのchatデータを削除
-    db_session.commit()  # 変更をコミット
-
-    return ChatsResponse(chats=chats)
-
 
 
 # chatsテーブルに単一のchatデータを登録するAPI
@@ -140,18 +117,14 @@ def get_summary(user_id: str, db_session: Session = Depends(get_db_session)):
     db_summary = db_session.query(SummariesModel).filter(SummariesModel.user_id == user_id).first()
     return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # db_summaryをSummaryスキーマに変換して返す
 
-    return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # db_summaryをSummaryスキーマに変換して返す
-
-
 # summariesテーブルから複数のsummaryデータを取得するAPI
 @app.get("/summaries/{user_id}/{start_date}_{end_date}", response_model=SummariesResponse)
-def get_summaries(user_id: str, start_date: str, end_date: str, db_session: Session = Depends(get_db_session)):
+def get_summaries(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session = Depends(get_db_session)):
     db_summaries = db_session.query(SummariesModel).filter(
         SummariesModel.user_id == user_id,
         SummariesModel.date >= start_date,
         SummariesModel.date <= end_date
     ).all()
-    summaries = list(map(convert_summary_model_to_summary_schema, db_summaries))  # db_summariesの各要素をSummaryスキーマに変換
     summaries = list(map(convert_summary_model_to_summary_schema, db_summaries))  # db_summariesの各要素をSummaryスキーマに変換
     return SummariesResponse(summaries=summaries)
 
@@ -161,11 +134,10 @@ def get_summaries(user_id: str, start_date: str, end_date: str, db_session: Sess
 @app.post("/summaries", response_model=SummaryResponse)
 def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(get_db_session)):
     db_summary = convert_summary_schema_to_summary_model(summary_request)  # SummaryRequestをSummariesModelに変換
-    db_summary = convert_summary_schema_to_summary_model(summary_request)  # SummaryRequestをSummariesModelに変換
     db_session.add(db_summary)
     db_session.commit()
     db_session.refresh(db_summary)
-    return SummaryResponse(summary=summary_request)
+    return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # 登録したdb_summaryをSummaryスキーマに変換して返す
 
 
 
@@ -217,11 +189,12 @@ def get_random_quiz(user_id: str = Query(..., description="User ID", min_length=
     )
     return QuizResponse(quiz=quiz_schema, message="OK")
 
+# チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
 
     AI_objective_answer = create_objective_reply(chat_create_request)
-    AI_personalized_answer=create_objective_reply(chat_create_request)
+    AI_personalized_answer=AI_objective_answer
     post_chat(
         ChatRequest(
             user_id=chat_create_request.user_id,
@@ -235,25 +208,15 @@ def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = D
 
     return ChatCreateResponse(AI_personalized_answer=AI_personalized_answer)
 
-def create_objective_reply(chat_create_request: ChatCreateRequest):
 
-    return stub()
+@app.post("/create_reply/objective", response_model= BedrockResponse)
+def create_objective_reply(chat_request: BedrockRequest, db_session: Session = Depends(get_db_session)):
+    # return stub()
+    ai_objective_answer = get_bedrock_reply(chat_request.user_prompt)
+    return BedrockResponse(message="Objective reply created", answer=ai_objective_answer)
 
-def stub():
-    ls = [
-        "ハチは地球上で最も重要な生物と呼ばれています。",
-        "富士山は日本で最も高い山で、標高は3,776メートルです。",
-        "タコには3つの心臓があります。",
-        "シロクマの肌は実は黒色です。",
-        "カタツムリの歯の数は1万本以上あります。",
-        "バナナはベリー類に分類されます。",
-        "キリンの首には人間と同じ数の骨（7個）があります。",
-        "オウムは自分の名前を認識できることがあります。",
-        "地球上で最も古い木は約5,000歳です。",
-        "カメレオンは舌を体の2倍以上の長さまで伸ばせます。"
-    ]
-    return ls[random.randint(0, len(ls) - 1)]
-
+# def create_objective_reply(chat_create_request: ChatCreateRequest):
+#     return stub()
 
 def get_bedrock_reply(user_prompt: str) -> str:
     load_dotenv()  # .envファイルから環境変数を読み込む
@@ -305,7 +268,19 @@ def get_bedrock_reply(user_prompt: str) -> str:
 
     return answer
 
-@app.post("/create_reply/objective", response_model= BedrockResponse)
-def create_objective_reply2(chat_request: BedrockRequest, db_session: Session = Depends(get_db_session)):
-    ai_objective_answer = get_bedrock_reply(chat_request.user_prompt)
-    return BedrockResponse(message="Objective reply created", answer=ai_objective_answer)
+def stub():
+    # これはcreate_objective_replyのスタブ関数です。
+    ls = [
+        "ハチは地球上で最も重要な生物と呼ばれています。",
+        "富士山は日本で最も高い山で、標高は3,776メートルです。",
+        "タコには3つの心臓があります。",
+        "シロクマの肌は実は黒色です。",
+        "カタツムリの歯の数は1万本以上あります。",
+        "バナナはベリー類に分類されます。",
+        "キリンの首には人間と同じ数の骨（7個）があります。",
+        "オウムは自分の名前を認識できることがあります。",
+        "地球上で最も古い木は約5,000歳です。",
+        "カメレオンは舌を体の2倍以上の長さまで伸ばせます。"
+    ]
+    return ls[random.randint(0, len(ls) - 1)]
+
