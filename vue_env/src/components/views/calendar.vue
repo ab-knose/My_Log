@@ -65,23 +65,11 @@ export default defineComponent({
     onMounted(async () => {
       labeledData.value = await getLabeledData(USER_ID)
       events.value = yearsToEventArray(labeledData.value)
-
-      //quiz
-      getLastQuizAnswerDate(USER_ID).then(lastAnswerDate => {
-        // 最終クイズ回答日が今日でなければクイズ表示
-        let today = new Date()
-        let formattedTodayDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-        if (lastAnswerDate == formattedTodayDate) {
-          alert(`最終クイズ回答日と一致`)
-        } else {
-          alert(`最終クイズ回答日と一致しません`)
-        }
-
-        //TODO: クイズ回答終了後
-        //クイズ回答日を更新
-        putLastQuizAnswereDate(USER_ID).then(() => {
-          console.log('クイズ回答日を更新しました')
-        })
+      
+      const today = new Date()
+      const formattedTodayDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+      putLastQuizAnswereDate(USER_ID).then(() => {
+        console.log('クイズ回答日を更新しました')
       })
     })
 
@@ -140,16 +128,6 @@ async function getSummary(user_id: string, date: string) {
   try {
     //const response = await axios.get(`${API_URL}/summaries/${user_id}/${date}-${date}`)
     const response = await axios.get(`${API_URL}/summaries/${user_id}`)
-    return response.data
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-//クイズ回答日を取得
-async function getLastQuizAnswerDate(user_id: string) {
-  try {
-    const response = await axios.get(`${API_URL}/quiz/last_answeredate/${user_id}`)
     return response.data
   } catch (error) {
     console.error(error)
