@@ -184,6 +184,7 @@ def get_random_quiz(user_id: str = Query(..., description="User ID", min_length=
     import datetime
 
     today = datetime.date.today()
+#teを更新するAPI
 
     # 既に今日クイズに回答しているか確認
     answered = db_session.query(ChatsModel).filter(
@@ -213,6 +214,10 @@ def get_random_quiz(user_id: str = Query(..., description="User ID", min_length=
         answer=quiz.answer
     )
     return QuizResponse(quiz=quiz_schema, message="OK")
+
+#クイズに答えた場合users_last_action_dateのlast_quiz_answer_dateを更新するAPI
+																		
+
 
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
