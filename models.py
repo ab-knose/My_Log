@@ -8,10 +8,6 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 # chats DBのモデル定義
-"""
-2025/06/24現在、chatsテーブルにはuser_promptは存在しないため、コメントアウトした。
-後ほどchatsテーブルとともに修正すべし。
-"""
 class ChatsModel(Base):
     __tablename__ = "chats" # テーブル名
     user_id = Column(Integer, primary_key=True, index=True)

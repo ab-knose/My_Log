@@ -7,12 +7,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 # Bedrock
 import boto3
-import json
 from dotenv import load_dotenv
 # general
 import datetime
 import random
 import os
+import json
 # 自作のmodels, schemas, crud, utils
 import random
 # 自作のmodels, schemas, crud, utils
@@ -209,6 +209,7 @@ def update_last_quiz_answer_date(user_id: str, db_session: Session = Depends(get
         db_session.commit()
         return UsersLastActionDateResponse(user_id=user_id, date=today)
 
+
 # チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
@@ -229,16 +230,10 @@ def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = D
     return ChatCreateResponse(AI_personalized_answer=AI_personalized_answer)
 
 
-@app.post("/create_reply/objective", response_model= BedrockResponse)
-def create_objective_reply(chat_request: BedrockRequest, db_session: Session = Depends(get_db_session)):
+@app.post("/create_reply/objective", response_model= str)
+def create_objective_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
     # return stub()
-    ai_objective_answer = get_bedrock_reply(chat_request.user_prompt)
-    return BedrockResponse(message="Objective reply created", answer=ai_objective_answer)
 
-# def create_objective_reply(chat_create_request: ChatCreateRequest):
-#     return stub()
-
-def get_bedrock_reply(user_prompt: str) -> str:
     load_dotenv()  # .envファイルから環境変数を読み込む
     aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")  # 環境変数からアクセスキーを取得
     aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")  # 環境変数からシークレットキーを取得
@@ -267,10 +262,10 @@ def get_bedrock_reply(user_prompt: str) -> str:
     })
     messages.append({
         "role": "user",
-        "content": user_prompt
+        "content": chat_create_request.user_prompt
     })
 
-    body = json.dumps(
+    body = json.dumps(  # JSON形式でリクエストボディを作成
         {
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": 1000,
@@ -284,11 +279,11 @@ def get_bedrock_reply(user_prompt: str) -> str:
         body=body
     )
     response_body = json.loads(response.get('body').read())  # JSON形式でレスポンスを取得
-    answer = response_body["content"][0]["text"]  # JSONから必要な部分を抽出
+    AI_answer = response_body["content"][0]["text"]  # JSONから必要な部分を抽出
 
-    return answer
+    return AI_answer
 
-def stub():
+def stub() -> str:
     # これはcreate_objective_replyのスタブ関数です。
     ls = [
         "ハチは地球上で最も重要な生物と呼ばれています。",
@@ -303,4 +298,3 @@ def stub():
         "カメレオンは舌を体の2倍以上の長さまで伸ばせます。"
     ]
     return ls[random.randint(0, len(ls) - 1)]
-
