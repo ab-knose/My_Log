@@ -87,6 +87,20 @@ class QuizResponse(BaseModel):
     quiz: Quiz | None = None
     message: str | None = None
 
+"""users_last_action_date DBのスキーマ定義"""
+class UsersLastActionDate(BaseModel):
+    user_id: str  # ユーザーIDを含む
+    last_login_date: datetime.date | None = None  # 最後のログイン日
+    last_quiz_answer_date: datetime.date | None = None  # 最後のクイズ回答日
+
+class UsersLastActionDateRequest(BaseModel):
+    user_id: str  # ユーザーIDを含む
+    date: datetime.date  # 今日の日付を含む
+
+class UsersLastActionDateResponse(BaseModel):
+    user_id: str
+    date: datetime.date
+
 """Bedrockと通信するためのFastAPIスキーマ定義"""
 class BedrockResponse(BaseModel):
     message: str  # Bedrockからの応答メッセージを含む
