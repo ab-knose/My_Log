@@ -4,11 +4,11 @@
     <form @submit.prevent="saveEdit">
       <div class="form-row">
         <label>PJ Name</label>
-        <input v-model="form.pjName" type="text" />
+        <input v-model="form.pjName" type="text" disabled />
       </div>
       <div class="form-row">
         <label>Start Date</label>
-        <input v-model="form.startDate" type="date" />
+        <input v-model="form.startDate" type="date" disabled />
       </div>
       <div class="form-row">
         <label>Goal1</label>

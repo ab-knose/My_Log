@@ -1,14 +1,27 @@
 <template>
     <div class="term-eval-container">
         <div class="term-eval-card">
-            <div>評価画面</div>
-            <button>ボタン</button>
+            <div class="date-range-row">
+                <label>開始日</label>
+                <input type="date" v-model="startDate" />
+                <label>終了日</label>
+                <input type="date" v-model="endDate" />
+            </div>
+            <button @click="showSummary">要約作成開始</button>
+            <div v-if="summary" class="summary-box">{{ summary }}</div>
         </div>
     </div>
 </template>
 
 <script setup>
 const user_id = window.sessionStorage.getItem("user_id"); 
+import { ref } from 'vue';
+const summary = ref("");
+const startDate = ref("");
+const endDate = ref("");
+const showSummary = () => {
+    summary.value = `これは仮の要約テキストです。期間: ${startDate.value || '未指定'} ～ ${endDate.value || '未指定'}`;
+};
 </script>
 
 <style scoped>
@@ -30,6 +43,23 @@ const user_id = window.sessionStorage.getItem("user_id");
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+.date-range-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.summary-box {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: #f0f8ff;
+    border-radius: 10px;
+    color: #333;
+    font-size: 1.1rem;
+    width: 100%;
+    text-align: left;
+    box-sizing: border-box;
 }
 button {
     padding: 8px 16px;
