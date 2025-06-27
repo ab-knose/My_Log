@@ -72,12 +72,13 @@ class LabeledDatesResponse(BaseModel):
 """ quizzes DBのスキーマ定義 """
 class Quiz(BaseModel):
     id: int
-    quiz: str
-    answer: str
     choice1: str
     choice2: str
     choice3: str
     choice4: str
+    quiz: str
+    answer: str
+    is_correct: int
 
 class QuizRequest(Quiz):
     pass
@@ -90,11 +91,6 @@ class QuizResponse(BaseModel):
 class BedrockResponse(BaseModel):
     message: str  # Bedrockからの応答メッセージを含む
     answer: str  # Bedrockからの回答内容を含む
-
-class BedrockRequest(BaseModel):
-    user_id: str  # ユーザーIDを含む
-    date_time: datetime.datetime  # 日時を含む
-    user_prompt: str  # ユーザーからのプロンプトを含む
 
 
 """Bedrockへの命令をフロントエンドから受け取るためのFastAPIスキーマ定義"""
