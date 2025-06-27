@@ -23,7 +23,6 @@ from utils import *
 
 
 
-
 """DBの設定"""
 # データベースのURLを設定
 # [要対応？]DATABASE_URL が研修で指定されている形式と違うらしい？
@@ -83,15 +82,22 @@ def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
 # chatsテーブルから複数のchatデータを取得するAPI
 @app.get("/chats/{user_id}/{start_date}_{end_date}", response_model=ChatsResponse)
 def get_chats(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session = Depends(get_db_session)):
+    chats_response = get_chats_internal(user_id, start_date, end_date, db_session=db_session)
+    return chats_response
+
+
+def get_chats_internal(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session) -> ChatsResponse:
+    """
+    内部関数: chatsテーブルから全てのchatデータを取得する。
+    これは、他のAPIからも利用されるため、共通の処理として定義している。
+    """
     db_chats = db_session.query(ChatsModel).filter(
         ChatsModel.user_id == user_id,
         ChatsModel.date_time >= datetime.datetime.combine(start_date, datetime.time.min),
         ChatsModel.date_time <= datetime.datetime.combine(end_date, datetime.time.max)
     ).all()
     chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
-
     return ChatsResponse(chats=chats)
-
 
 # chatsテーブルからすべてのchatデータを削除するAPI
 """※危険！使う時は全員の同意を得てからにせよ。"""
@@ -225,7 +231,7 @@ def update_last_quiz_answer_date(user_id: str, db_session: Session = Depends(get
 # チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
-    AI_objective_answer = create_objective_reply(chat_create_request)
+    AI_objective_answer = create_objective_reply(chat_create_request, db_session=db_session)  # AIの客観的な回答を生成
     AI_personalized_answer=AI_objective_answer
     post_chat(
         ChatRequest(
@@ -260,11 +266,27 @@ def create_objective_reply(chat_create_request: ChatCreateRequest, db_session: S
     messages.append({
         "role": "user",
         "content": initial_prompt
-    })
+    })  # Bedrockへの指示を最初に追加
+
+    # 当日のユーザーのチャット履歴を取得
+    today = chat_create_request.date_time.date()
+    chats = get_chats_internal(user_id=chat_create_request.user_id, start_date=today, end_date=today, db_session=db_session).chats
+
+    for chat in chats: # ユーザーとAIの応答を交互に追加
+        messages.append({
+            "role": "user",
+            "content": chat.user_prompt
+        })
+        messages.append({
+            "role": "assistant",
+            "content": chat.AI_objective_answer
+        })
+
     messages.append({
         "role": "user",
         "content": chat_create_request.user_prompt
-    })
+    })  # ユーザーの入力を追加
+
     AI_objective_answer = communicate_with_bedrock(client=client,
         messages=messages,
         db_session=db_session
