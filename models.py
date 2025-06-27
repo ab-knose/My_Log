@@ -35,18 +35,30 @@ class QuizzesModel(Base):
     choice3 = Column(String, primary_key=True, index=True)
     choice4 = Column(String, primary_key=True, index=True)
 
+# users_last_action_date DBのモデル定義
+class UsersLastActionDateModel(Base):
+    __tablename__ = "users_last_action_date"  # テーブル名
+    user_id = Column(String, nullable=False, primary_key=True, index=True)
+    last_login_date = Column(Date)
+    last_quiz_answer_date = Column(Date)
+   
 # EF DBのモデル定義
 class EFModel(Base):
     __tablename__ = "EF"  # テーブル名
     dimension = Column(Integer, nullable=False)
     sub_dimension = Column(Integer)
     detailed_category = Column(String)
-    class_ = Column(Integer, nullable=False)  # 'class'は予約語のためclass_
+    class_ = Column(Integer, name = "class",nullable=False)  # 'class'は予約語のためclass_
     content = Column(String, primary_key=True, index=True)
 
-# users_last_action_date DBのモデル定義
-class UsersLastActionDateModel(Base):
-    __tablename__ = "users_last_action_date"  # テーブル名
+#EPRs DBのモデル定義
+class  EPRsModel(Base):
+    __tablename__ = "EPRs"  # テーブル名
     user_id = Column(String, nullable=False, primary_key=True, index=True)
-    last_login_answer_date = Column(Date)
-    last_quiz_answer_date = Column(Date)
+    project_name = Column(String, nullable=False)
+    start_date = Column(Date, nullable=False, primary_key=True, index=True)
+    goal1 = Column(String)
+    goal2 = Column(String)
+    goal3 = Column(String)
+    goal4 = Column(String)
+    

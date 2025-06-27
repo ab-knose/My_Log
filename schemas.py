@@ -87,6 +87,54 @@ class QuizResponse(BaseModel):
     quiz: Quiz | None = None
     message: str | None = None
 
+"""users_last_action_date DBのスキーマ定義"""
+class UsersLastActionDate(BaseModel):
+    user_id: str  # ユーザーIDを含む
+    last_login_date: datetime.date | None = None  # 最後のログイン日
+    last_quiz_answer_date: datetime.date | None = None  # 最後のクイズ回答日
+
+class UsersLastActionDateRequest(BaseModel):
+    user_id: str  # ユーザーIDを含む
+    date: datetime.date  # 今日の日付を含む
+
+class UsersLastActionDateResponse(BaseModel):
+    user_id: str
+    date: datetime.date
+
+"""EF DBのスキーマ定義"""
+class EF(BaseModel):
+    dimension: int  # 次元を表す整数
+    sub_dimension: int | None = None  # サブ次元を表す整数（オプション）
+    detailed_category: str | None = None  # 詳細カテゴリを表す文字列（オプション）
+    class_: int  # クラスを表す整数（'class'は予約語のためclass_とする）
+    content: str  # コンテンツを表す文字列
+
+class EFRequest(EF):
+    class_: int  # クラスを表す整数（'class'は予約語のためclass_とする）
+
+class EFResponse(BaseModel):
+    ef: EF 
+
+"""EPRs DBのスキーマ定義"""
+class EPRs(BaseModel):
+    user_id: str  # ユーザーIDを含む
+    project_name: str  # プロジェクト名を含む
+    start_date: datetime.date  # 開始日を含む
+    goal1: str | None = None  # 目標1を含む（オプション）
+    goal2: str | None = None  # 目標2を含む（オプション）
+    goal3: str | None = None  # 目標3を含む（オプション）
+    goal4: str | None = None  # 目標4を含む（オプション）
+   #    goal5: str | None = None  # 目標5を含む（オプション、必要に応じて追加）
+
+class EPRsRequest(EPRs):
+    user_id: str  # ユーザーIDを含む
+
+class EPRsResponse(BaseModel):
+    epr: EPRs  # EPRsのデータを含む
+    project_name: str  # プロジェクト名を含む
+
+   
+
 """Bedrockと通信するためのFastAPIスキーマ定義"""
 class BedrockResponse(BaseModel):
     message: str  # Bedrockからの応答メッセージを含む

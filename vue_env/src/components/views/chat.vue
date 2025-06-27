@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { onMounted } from 'vue';
 import axios from "axios";
-window.sessionStorage.setItem("user_id", "user001");// ユーザーIDをセッションストレージに保存
+//window.sessionStorage.setItem("user_id", "user001");// ユーザーIDをセッションストレージに保存
 const user_id = window.sessionStorage.getItem("user_id"); // ユーザーIDを取得、なければデフォルト値を使用
 
 
@@ -39,8 +39,8 @@ const end_date = `${yyyy}-${mm}-${dd}`;
 // ここでは、axiosを使用してGETリクエストを送信
 async function getTodaysChats(user_id: string){
   try {
-  const response = await axios.get(`http://127.0.0.1:8000/chats/${user_id}/${start_date}/${end_date}`);
-    return response.data 
+  const response = await axios.get(`http://127.0.0.1:8000/chats/${user_id}/${start_date}_${end_date}`);
+    return response.data
   }catch (error) {
     console.error(error)
   }
@@ -110,22 +110,10 @@ const sendMessage = async () => {
 
 <template>
   <div class="chat-container">
-    <div class="todays-history">
-      <h4>今日のチャット履歴</h4>
-      <div class="messages">
-        <div
-          v-for="(msg, idx) in TodaysChatsHistory"
-          :key="'history-' + idx"
-          :class="['message', msg.sender]"
-        >
-          {{ msg.text }}
-        </div>
-      </div>
-    </div>
     <div class="messages">
       <div
-        v-for="(msg, idx) in messages"
-        :key="idx"
+        v-for="(msg, idx) in [...TodaysChatsHistory, ...messages]"
+        :key="'all-' + idx"
         :class="['message', msg.sender]"
       >
         {{ msg.text }}
@@ -148,34 +136,22 @@ const sendMessage = async () => {
   margin: 40px auto;
   border: 1px solid #ccc;
   border-radius: 8px;
-  padding: 16px;
+  padding: 16px 16px 0 16px;
   background: #fafafa;
-}
-.todays-history {
-  margin-bottom: 16px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  padding: 8px 12px;
-}
-.todays-history h4 {
-  margin: 0 0 4px 0;
-  font-size: 1rem;
-  color: #388e3c;
-}
-.todays-history ul {
-  margin: 0;
-  padding-left: 18px;
-}
-.todays-history li {
-  font-size: 0.95rem;
-  color: #333;
+  height: 80vh;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 .messages {
-  min-height: 200px;
-  margin-bottom: 12px;
+  min-height: 320px;
+  max-height: 60vh;
+  margin-bottom: 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow-y: auto;
 }
 .message {
   padding: 8px 12px;
@@ -194,6 +170,8 @@ const sendMessage = async () => {
 .input-area {
   display: flex;
   gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 12px; /* 送信フォーム下に少し余白 */
 }
 input[type="text"], input {
   flex: 1;

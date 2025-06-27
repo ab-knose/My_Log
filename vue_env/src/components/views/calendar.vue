@@ -1,12 +1,12 @@
 <!-- filepath: c:\fy26-digital-dev-training-handson\group1_dev\My_Log\components\MyCalendar.vue -->
 <template>  
   <vue-cal
-    style="height: 500px"
-    :selected-date="selectedDate"
-    :events="events"
-    :disable-views="['years', 'year', 'week', 'day']"
-     default-view="month"
-    @cell-click="onCellClick"
+  style="height: 500px"
+  :selected-date="selectedDate"
+  :events="events"
+  :disable-views="['years', 'year', 'week', 'day']"
+  default-view="month"
+  @cell-click="onCellClick"
   />
 </template>
 
@@ -16,13 +16,42 @@ import VueCal from 'vue-cal'
 import 'vue-cal/dist/vuecal.css'
 import axios from 'axios'
 
+const API_URL = 'http://127.0.0.1:8000'
+
 interface CalendarEvent {
   start: string
   end: string
 }
 
-const USER_ID = 'user001' // ユーザーIDを定義（後でログイン中のユーザのものに変更すること）
-const API_URL = 'http://127.0.0.1:8000'
+var params = new URLSearchParams(window.location.search);
+var code = params.get('code')
+//cognitoのユーザ情報取得
+if(sessionStorage.getItem('user_id')==null){
+  const clientId = '5ggulopp4nit1hge4qcpvmackt';
+  const endpoint = 'https://ap-southeast-2uwgquxvjv.auth.ap-southeast-2.amazoncognito.com/oauth2/token';
+
+  // application/x-www-form-urlencoded形式でbodyを作成
+  //const requestBody = `grant_type=authorization_code&client_id=${clientId}&scope=openid&redirect_uri=http://localhost:5173/&code=${code}`;
+  const requestBody = new URLSearchParams();
+  requestBody.append('grant_type', 'authorization_code');
+  requestBody.append('client_id', clientId);
+  requestBody.append('code', code);
+  requestBody.append('redirect_uri', 'http://localhost:5173/calendar'); // 認可時と同じURL
+
+  const tokenRes = await axios.post(endpoint, requestBody, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+  });
+  const { access_token, id_token } = tokenRes.data;
+
+  const userInfoRes = await axios.get(
+    'https://ap-southeast-2uwgquxvjv.auth.ap-southeast-2.amazoncognito.com/oauth2/userInfo',
+    { headers: { Authorization: `Bearer ${access_token}` } }
+  );
+  sessionStorage.setItem('user_id', userInfoRes.data.sub);
+}
+
+const USER_ID = sessionStorage.getItem('user_id') // ユーザーIDを定義（後でログイン中のユーザのものに変更すること）
+console.log("user_id(sub):", USER_ID)
 
 //vueカレンダーで必要な情報を使えるようにする
 export default defineComponent({
@@ -76,6 +105,17 @@ export default defineComponent({
 
   }
 })
+
+//cognitoの認証情報からユーザ情報を取得
+async function postCode(url, data) {
+  const response = await axios.post(url, data, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  });
+  return response;
+}
+
 
 // APIから振り返りを行った日付を取得する関数
 async function getLabeledData(user_id: string){

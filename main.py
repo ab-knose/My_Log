@@ -157,6 +157,35 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
     return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # 登録したdb_summaryをSummaryスキーマに変換して返す
 
 
+#EFの内容をEF DBから取得する。	
+@app.get("/ef", response_model=list[EF])
+def get_ef(db_session: Session = Depends(get_db_session)):
+    db_efs = db_session.query(EFModel).all()
+    # EFModelの各要素をEFスキーマに変換
+    efs = [EF(
+        dimension=ef.dimension,
+        sub_dimension=ef.sub_dimension,
+        detailed_category=ef.detailed_category,
+        class_=ef.class_,
+        content=ef.content
+    ) for ef in db_efs]
+    return efs
+
+# EPRsテーブルからEPRの内容を取得するAPI
+@app.get("/epr", response_model=list[EPRs])	
+def get_eprs(db_session: Session = Depends(get_db_session)):
+    db_eprs = db_session.query(EPRsModel).all()
+    # EPRsModelの各要素をEPRスキーマに変換
+    eprs = [EPRs(
+        user_id=epr.user_id,
+        project_name=epr.project_name,
+        start_date=epr.start_date,
+        goal1=epr.goal1,
+        goal2=epr.goal2,
+        goal3=epr.goal3,
+        goal4=epr.goal4,
+    ) for epr in db_eprs]
+    return eprs																		
 
 # chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
 
@@ -174,9 +203,8 @@ def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session))
     import hashlib
     import datetime
 
-
-    today = datetime.date.today()
 #teを更新するAPI
+    today = datetime.date.today()
     today = datetime.date.today().strftime("%Y-%m-%d")
 
     # 既に今日クイズに回答しているか確認
@@ -213,10 +241,23 @@ def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session))
 
 
 #クイズに答えた場合users_last_action_dateのlast_quiz_answer_dateを更新するAPI
+@app.put("/quiz/last_answerdate/{user_id}", response_model=UsersLastActionDateResponse)	
+def update_last_quiz_answer_date(user_id: str, db_session: Session = Depends(get_db_session)):
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    user = db_session.query(UsersLastActionDateModel).filter(UsersLastActionDateModel.user_id == user_id).first()
+    if user:
+        user.last_quiz_answer_date = today
+        db_session.commit()
+        return UsersLastActionDateResponse(user_id=user_id, date=today)
+    else:
+        # ユーザーがいない場合は新規作成する場合など、適宜対応
+        user = UsersLastActionDateModel(user_id=user_id, last_quiz_answer_date=today)
+        db_session.add(user)
+        db_session.commit()
+        return UsersLastActionDateResponse(user_id=user_id, date=today)
 
 
 # チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API
-
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
     AI_objective_answer = create_objective_reply(chat_create_request, db_session=db_session)  # AIの客観的な回答を生成
