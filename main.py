@@ -188,7 +188,8 @@ def get_random_quiz(user_id: str = Query(..., description="User ID", min_length=
     import datetime
 
     today = datetime.date.today()
-#teを更新するAPI
+    #teを更新するAPI
+    today = datetime.date.today().strftime("%Y-%m-%d")
 
     # 既に今日クイズに回答しているか確認
     answered = db_session.query(ChatsModel).filter(
