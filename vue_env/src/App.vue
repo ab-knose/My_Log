@@ -4,7 +4,7 @@
     <main style="min-height: 70vh; padding-bottom: 60px;">
       <RouterView />
     </main>
-    <footer>
+    <footer v-if="$route.path !== '/epr_edit' && $route.path !== '/epr_make'">
       <nav class="bottom-nav">
         <button @click="$router.push('/calendar')">カレンダー</button>
         <button @click="$router.push('/chat')">チャット</button>
