@@ -142,6 +142,7 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
 
 
 # chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
+
 @app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
 def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
     db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
@@ -151,20 +152,17 @@ def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session
     return labeled_dates
 
 # EFからランダムにクイズを選択し取得するAPI
-from fastapi import Query
-
-@app.get("/quizzes/random", response_model=QuizResponse)
-def get_random_quiz(user_id: str = Query(..., description="User ID", min_length=1), db_session: Session = Depends(get_db_session)):
+@app.get("/quizzes/random/{user_id}", response_model=QuizResponse)
+def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session)):
     import hashlib
     import datetime
 
-    today = datetime.date.today()
+    today = datetime.date.today().strftime("%Y-%m-%d")
 
     # 既に今日クイズに回答しているか確認
-    answered = db_session.query(ChatsModel).filter(
-        ChatsModel.user_id == user_id,
-        ChatsModel.date_time >= datetime.datetime.combine(today, datetime.time.min),
-        ChatsModel.date_time <= datetime.datetime.combine(today, datetime.time.max)
+    answered = db_session.query(LastActionDateModel).filter(
+        LastActionDateModel.user_id == user_id,
+        LastActionDateModel.last_quiz_answer_date == today
     ).first()
     if answered:
         # 422エラーではなく、200で既に回答済みを返す
@@ -184,8 +182,12 @@ def get_random_quiz(user_id: str = Query(..., description="User ID", min_length=
     quiz = quizzes[quiz_index]
     quiz_schema = Quiz(
         id=quiz.id,
-        question=quiz.question,
-        answer=quiz.answer
+        choice1=quiz.choice1,
+        choice2=quiz.choice2,
+        choice3=quiz.choice3,
+        choice4=quiz.choice4,
+        quiz=quiz.quiz,
+        answer=quiz.answer,
     )
     return QuizResponse(quiz=quiz_schema, message="OK")
 
