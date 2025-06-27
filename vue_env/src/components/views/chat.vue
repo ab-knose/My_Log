@@ -45,7 +45,7 @@ const end_date = `${end_yyyy}-${end_mm}-${end_dd}`;
 // ここでは、axiosを使用してGETリクエストを送信
 async function getTodaysChats(user_id: string){
   try {
-  const response = await axios.get(`http://127.0.0.1:8000/chats/${user_id}/2020-06-26_2025-06-27`);
+  const response = await axios.get(`http://127.0.0.1:8000/chats/${user_id}/2025-06-27_2025-06-28`);
     return response.data 
   }catch (error) {
     console.error(error)
