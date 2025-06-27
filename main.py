@@ -41,7 +41,7 @@ def get_db_session():
         db_session.close()
 
 
-"""FastAPIの準備"""
+"""FastAPIの設定"""
 # FastAPIアプリケーションのインスタンスを作成
 app = FastAPI()
 
@@ -54,6 +54,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+"""Bedrockの設定"""
+load_dotenv()  # .envファイルから環境変数を読み込む
+aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")  # 環境変数からアクセスキーを取得
+aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")  # 環境変数からシークレットキーを取得
+client = boto3.client(
+    'bedrock-runtime',
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key,
+    region_name="us-east-1"
+)
+
 
 
 """API定義"""
@@ -201,7 +213,6 @@ def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session))
 
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
-
     AI_objective_answer = create_objective_reply(chat_create_request)
     AI_personalized_answer=AI_objective_answer
     post_chat(
@@ -222,22 +233,12 @@ def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = D
 def create_objective_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
     # return stub()
 
-    load_dotenv()  # .envファイルから環境変数を読み込む
-    aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")  # 環境変数からアクセスキーを取得
-    aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")  # 環境変数からシークレットキーを取得
-    client = boto3.client(
-        'bedrock-runtime',
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key,
-        region_name="us-east-1"
-    )
-
     # [要変更] EFの内容は別の関数で持ってくるようにする。
     EF = "1. 日々行動する。2. 他者に配慮する。3. 目標を持つ。4. 自分の感情を理解する。5. 自分の行動を振り返る。6. 他者と協力する。7. 自分の価値観を持つ。8. 健康的な生活を送る。9. 学び続ける。10. 社会に貢献する。"
     initial_prompt = f"""
         ユーザーとチャットをしてもらいます。
         会話の中で、もし以下の[基準]に関連する内容があれば、ユーザーにそれを教えて褒めてください。
-        回答は短文で、あくまで、ユーザーとの気軽なチャットであることを忘れないでください。
+        回答は40字程度の短文で、あくまで、ユーザーとの気軽なチャットであることを忘れないでください。
         もしも、[基準]に関連する内容が見つからなかった場合は、ユーザーの入力を受け入れ、自然な会話を続けてください。
         [基準]：{EF}[基準ここまで]
     """
@@ -252,7 +253,15 @@ def create_objective_reply(chat_create_request: ChatCreateRequest, db_session: S
         "role": "user",
         "content": chat_create_request.user_prompt
     })
+    AI_objective_answer = communicate_with_bedrock(client=client,
+        messages=messages,
+        db_session=db_session
+    )
+    return AI_objective_answer
 
+
+def communicate_with_bedrock(client: boto3.client, messages: list[dict], db_session: Session = Depends(get_db_session)) -> str:
+    # return stub()
     body = json.dumps(  # JSON形式でリクエストボディを作成
         {
             "anthropic_version": "bedrock-2023-05-31",
