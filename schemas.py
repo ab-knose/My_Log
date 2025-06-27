@@ -33,7 +33,9 @@ class ChatsResponse(BaseModel):
 
 
 
+
 """summaries DBと通信するためのFastAPIスキーマ定義"""
+
 # summariesの中の単一のsummaryを表すスキーマ。
 # これを直接使用することは無いが、requestやresponseに共通する一般的な性質として定義しておく。
 class Summary(BaseModel):
@@ -55,7 +57,9 @@ class SummariesResponse(BaseModel):
     summaries: list[Summary]
 
 
+
 """チャットをした日付"""
+
 #ラベルを付けた日を取得するためのリクエストスキーマ
 class LabeledDatesRequest(BaseModel):
     user_id: str
