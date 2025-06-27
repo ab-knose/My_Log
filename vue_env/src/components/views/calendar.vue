@@ -1,12 +1,12 @@
 <!-- filepath: c:\fy26-digital-dev-training-handson\group1_dev\My_Log\components\MyCalendar.vue -->
 <template>  
   <vue-cal
-    style="height: 500px"
-    :selected-date="selectedDate"
-    :events="events"
-    :disable-views="['years', 'year', 'week', 'day']"
-     default-view="month"
-    @cell-click="onCellClick"
+  style="height: 500px"
+  :selected-date="selectedDate"
+  :events="events"
+  :disable-views="['years', 'year', 'week', 'day']"
+  default-view="month"
+  @cell-click="onCellClick"
   />
 </template>
 
@@ -16,6 +16,8 @@ import VueCal from 'vue-cal'
 import 'vue-cal/dist/vuecal.css'
 import axios from 'axios'
 
+const API_URL = 'http://127.0.0.1:8000'
+
 interface CalendarEvent {
   start: string
   end: string
@@ -24,7 +26,7 @@ interface CalendarEvent {
 var params = new URLSearchParams(window.location.search);
 var code = params.get('code')
 //cognitoのユーザ情報取得
-if(sessionStorage.getItem('sub')==null){
+if(sessionStorage.getItem('user_id')==null){
   const clientId = '5ggulopp4nit1hge4qcpvmackt';
   const endpoint = 'https://ap-southeast-2uwgquxvjv.auth.ap-southeast-2.amazoncognito.com/oauth2/token';
 
@@ -45,11 +47,10 @@ if(sessionStorage.getItem('sub')==null){
     'https://ap-southeast-2uwgquxvjv.auth.ap-southeast-2.amazoncognito.com/oauth2/userInfo',
     { headers: { Authorization: `Bearer ${access_token}` } }
   );
-  sessionStorage.setItem('sub', userInfoRes.data.sub);
+  sessionStorage.setItem('user_id', userInfoRes.data.sub);
 }
 
-const USER_ID = sessionStorage.getItem('sub') // ユーザーIDを定義（後でログイン中のユーザのものに変更すること）
-const API_URL = 'http://127.0.0.1:8000'
+const USER_ID = sessionStorage.getItem('user_id') // ユーザーIDを定義（後でログイン中のユーザのものに変更すること）
 console.log("user_id(sub):", USER_ID)
 
 //vueカレンダーで必要な情報を使えるようにする

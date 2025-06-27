@@ -48,6 +48,17 @@ class EFModel(Base):
     dimension = Column(Integer, nullable=False)
     sub_dimension = Column(Integer)
     detailed_category = Column(String)
-    class_ = Column(Integer, nullable=False)  # 'class'は予約語のためclass_
+    class_ = Column(Integer, name = "class",nullable=False)  # 'class'は予約語のためclass_
     content = Column(String, primary_key=True, index=True)
 
+#EPRs DBのモデル定義
+class  EPRsModel(Base):
+    __tablename__ = "EPRs"  # テーブル名
+    user_id = Column(String, nullable=False, primary_key=True, index=True)
+    project_name = Column(String, nullable=False)
+    start_date = Column(Date, nullable=False, primary_key=True, index=True)
+    goal1 = Column(String)
+    goal2 = Column(String)
+    goal3 = Column(String)
+    goal4 = Column(String)
+    

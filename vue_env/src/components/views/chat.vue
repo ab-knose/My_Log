@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { onMounted } from 'vue';
 import axios from "axios";
-window.sessionStorage.setItem("user_id", "user001");// ユーザーIDをセッションストレージに保存
+//window.sessionStorage.setItem("user_id", "user001");// ユーザーIDをセッションストレージに保存
 const user_id = window.sessionStorage.getItem("user_id"); // ユーザーIDを取得、なければデフォルト値を使用
 
 

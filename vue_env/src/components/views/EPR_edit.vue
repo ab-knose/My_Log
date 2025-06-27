@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+const user_id = window.sessionStorage.getItem("user_id"); 
 import { useRouter } from 'vue-router';
 import { reactive } from 'vue';
 const router = useRouter();
