@@ -156,6 +156,9 @@ def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session))
     import hashlib
     import datetime
 
+
+    today = datetime.date.today()
+#teを更新するAPI
     today = datetime.date.today().strftime("%Y-%m-%d")
 
     # 既に今日クイズに回答しているか確認
@@ -190,7 +193,12 @@ def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session))
     )
     return QuizResponse(quiz=quiz_schema, message="OK")
 
+
+#クイズに答えた場合users_last_action_dateのlast_quiz_answer_dateを更新するAPI
+																		
+
 # チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API
+
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
 

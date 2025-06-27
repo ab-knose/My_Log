@@ -98,8 +98,8 @@ function yearsToEventArray(years: string[]): { start: string; end: string }[] {
 //要約を取得
 async function getSummary(user_id: string, date: string) {
   try {
-    let formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
-    const response = await axios.get(`${API_URL}/summaries/${user_id}/${formattedDate}_${formattedDate}`)
+    //const response = await axios.get(`${API_URL}/summaries/${user_id}/${date}-${date}`)
+    const response = await axios.get(`${API_URL}/summaries/${user_id}`)
     return response.data
   } catch (error) {
     console.error(error)
@@ -115,7 +115,7 @@ async function getLastQuizAnswerDate(user_id: string) {
     console.error(error)
   }
 }
-//クイズ回答日の更新
+
 async function putLastQuizAnswereDate(user_id: string) {
   const userData = {id: user_id}
   try {

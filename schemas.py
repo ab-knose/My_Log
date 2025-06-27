@@ -72,12 +72,13 @@ class LabeledDatesResponse(BaseModel):
 """ quizzes DBのスキーマ定義 """
 class Quiz(BaseModel):
     id: int
-    quiz: str
-    answer: str
     choice1: str
     choice2: str
     choice3: str
     choice4: str
+    quiz: str
+    answer: str
+    is_correct: int
 
 class QuizRequest(Quiz):
     pass
