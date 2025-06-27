@@ -20,7 +20,6 @@ from models import *
 from schemas import *
 # from crud import *
 from utils import *
-from utils import *
 
 
 
