@@ -1,12 +1,12 @@
 <!-- filepath: c:\fy26-digital-dev-training-handson\group1_dev\My_Log\components\MyCalendar.vue -->
 <template>  
   <vue-cal
-    style="height: 500px"
-    :selected-date="selectedDate"
-    :events="events"
-    :disable-views="['years', 'year', 'week', 'day']"
-     default-view="month"
-    @cell-click="onCellClick"
+  style="height: 500px"
+  :selected-date="selectedDate"
+  :events="events"
+  :disable-views="['years', 'year', 'week', 'day']"
+  default-view="month"
+  @cell-click="onCellClick"
   />
 </template>
 
@@ -15,6 +15,8 @@ import { defineComponent, ref, onMounted } from 'vue'
 import VueCal from 'vue-cal'
 import 'vue-cal/dist/vuecal.css'
 import axios from 'axios'
+
+const API_URL = 'http://127.0.0.1:8000'
 
 interface CalendarEvent {
   start: string
@@ -49,7 +51,6 @@ if(sessionStorage.getItem('sub')==null){
 }
 
 const USER_ID = sessionStorage.getItem('sub') // ユーザーIDを定義（後でログイン中のユーザのものに変更すること）
-const API_URL = 'http://127.0.0.1:8000'
 console.log("user_id(sub):", USER_ID)
 
 //vueカレンダーで必要な情報を使えるようにする
