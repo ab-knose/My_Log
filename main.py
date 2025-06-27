@@ -7,12 +7,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 # Bedrock
 import boto3
-import json
 from dotenv import load_dotenv
 # general
 import datetime
 import random
 import os
+import json
 # 自作のmodels, schemas, crud, utils
 import random
 # 自作のmodels, schemas, crud, utils
@@ -162,9 +162,9 @@ def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session))
     today = datetime.date.today().strftime("%Y-%m-%d")
 
     # 既に今日クイズに回答しているか確認
-    answered = db_session.query(LastActionDateModel).filter(
-        LastActionDateModel.user_id == user_id,
-        LastActionDateModel.last_quiz_answer_date == today
+    answered = db_session.query(UsersLastActionDateModel).filter(
+        UsersLastActionDateModel.user_id == user_id,
+        UsersLastActionDateModel.last_quiz_answer_date == today
     ).first()
     if answered:
         # 422エラーではなく、200で既に回答済みを返す
@@ -195,7 +195,7 @@ def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session))
 
 
 #クイズに答えた場合users_last_action_dateのlast_quiz_answer_dateを更新するAPI
-																		
+
 
 # チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API
 
