@@ -38,7 +38,12 @@ class QuizzesModel(Base):
     choice2 = Column(String, primary_key=True, index=True)
     choice3 = Column(String, primary_key=True, index=True)
     choice4 = Column(String, primary_key=True, index=True)
-    
+
+class LastActionDateModel(Base):
+    __tablename__ = "users_last_action_date"
+    user_id = Column(String, primary_key=True)
+    last_login_date = Column(Date)
+    last_quiz_answer_date = Column(Date)
 
 # EF DBのモデル定義
 class EFModel(Base):
