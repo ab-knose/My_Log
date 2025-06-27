@@ -34,12 +34,18 @@ const yyyy = today.getFullYear();
 const mm = String(today.getMonth() + 1).padStart(2, '0');
 const dd = String(today.getDate()).padStart(2, '0');
 const start_date = `${yyyy}-${mm}-${dd}`;
-const end_date = `${yyyy}-${mm}-${dd}`;
+// end_dateをstart_dateの1日後に設定
+const nextDay = new Date(today);
+nextDay.setDate(today.getDate() + 1);
+const end_yyyy = nextDay.getFullYear();
+const end_mm = String(nextDay.getMonth() + 1).padStart(2, '0');
+const end_dd = String(nextDay.getDate()).padStart(2, '0');
+const end_date = `${end_yyyy}-${end_mm}-${end_dd}`;
 // APIから今日のチャット履歴を取得する関数
 // ここでは、axiosを使用してGETリクエストを送信
 async function getTodaysChats(user_id: string){
   try {
-  const response = await axios.get(`http://127.0.0.1:8000/chats/${user_id}/${start_date}/${end_date}`);
+  const response = await axios.get(`http://127.0.0.1:8000/chats/${user_id}/2025-06-27_2025-06-28`);
     return response.data 
   }catch (error) {
     console.error(error)

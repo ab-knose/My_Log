@@ -1,6 +1,5 @@
 <template>
     <header>
-      ヘッダー
     </header>
     <main style="min-height: 70vh; padding-bottom: 60px;">
       <RouterView />
