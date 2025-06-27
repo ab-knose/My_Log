@@ -157,7 +157,7 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
     return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # 登録したdb_summaryをSummaryスキーマに変換して返す
 
 
-#EFの内容をEF DBから取得する。	
+#EFの内容をEF DBから取得する。
 @app.get("/ef", response_model=list[EF])
 def get_ef(db_session: Session = Depends(get_db_session)):
     db_efs = db_session.query(EFModel).all()
@@ -172,7 +172,7 @@ def get_ef(db_session: Session = Depends(get_db_session)):
     return efs
 
 # EPRsテーブルからEPRの内容を取得するAPI
-@app.get("/epr", response_model=list[EPRs])	
+@app.get("/epr", response_model=list[EPRs])
 def get_eprs(db_session: Session = Depends(get_db_session)):
     db_eprs = db_session.query(EPRsModel).all()
     # EPRsModelの各要素をEPRスキーマに変換
@@ -185,10 +185,9 @@ def get_eprs(db_session: Session = Depends(get_db_session)):
         goal3=epr.goal3,
         goal4=epr.goal4,
     ) for epr in db_eprs]
-    return eprs																		
+    return eprs
 
 # chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
-
 @app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
 def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
     db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
@@ -203,8 +202,6 @@ def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session))
     import hashlib
     import datetime
 
-#teを更新するAPI
-    today = datetime.date.today()
     today = datetime.date.today().strftime("%Y-%m-%d")
 
     # 既に今日クイズに回答しているか確認
@@ -241,7 +238,7 @@ def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session))
 
 
 #クイズに答えた場合users_last_action_dateのlast_quiz_answer_dateを更新するAPI
-@app.put("/quiz/last_answerdate/{user_id}", response_model=UsersLastActionDateResponse)	
+@app.put("/quiz/last_answerdate/{user_id}", response_model=UsersLastActionDateResponse)
 def update_last_quiz_answer_date(user_id: str, db_session: Session = Depends(get_db_session)):
     today = datetime.date.today().strftime("%Y-%m-%d")
     user = db_session.query(UsersLastActionDateModel).filter(UsersLastActionDateModel.user_id == user_id).first()
