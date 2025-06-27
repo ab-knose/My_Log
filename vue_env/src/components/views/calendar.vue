@@ -42,18 +42,16 @@ export default defineComponent({
         // 最終クイズ回答日が今日でなければクイズ表示
         let today = new Date()
         let formattedTodayDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-        console.log("formattedTodayDate:", formattedTodayDate)
+        if (lastAnswerDate == formattedTodayDate) {
+          alert(`最終クイズ回答日と一致`)
+        } else {
+          alert(`最終クイズ回答日と一致しません`)
+        }
 
-        getQuiz(USER_ID).then((quiz) =>{
-          if (quiz.quiz != null){
-            alert(`今日のクイズ: ${quiz.quiz.quiz}\n選択肢1: ${quiz.quiz.choice1}\n選択肢2: ${quiz.quiz.choice2}\n選択肢3: ${quiz.quiz.choice3}\n選択肢4: ${quiz.quiz.choice4}\n答えはOKを押して表示`)
-            alert(`答え: ${quiz.quiz.answer}`)
-            
-            //クイズ回答日を更新
-            putLastQuizAnswereDate(USER_ID).then(() => {
-              console.log('クイズ回答日を更新')
-            })
-          }
+        //TODO: クイズ回答終了後
+        //クイズ回答日を更新
+        putLastQuizAnswereDate(USER_ID).then(() => {
+          console.log('クイズ回答日を更新しました')
         })
       })
     })
@@ -100,8 +98,8 @@ function yearsToEventArray(years: string[]): { start: string; end: string }[] {
 //要約を取得
 async function getSummary(user_id: string, date: string) {
   try {
-    let formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
-    const response = await axios.get(`${API_URL}/summaries/${user_id}/${formattedDate}_${formattedDate}`)
+    //const response = await axios.get(`${API_URL}/summaries/${user_id}/${date}-${date}`)
+    const response = await axios.get(`${API_URL}/summaries/${user_id}`)
     return response.data
   } catch (error) {
     console.error(error)
@@ -117,7 +115,7 @@ async function getLastQuizAnswerDate(user_id: string) {
     console.error(error)
   }
 }
-//クイズ回答日の更新
+
 async function putLastQuizAnswereDate(user_id: string) {
   const userData = {id: user_id}
   try {
@@ -129,9 +127,9 @@ async function putLastQuizAnswereDate(user_id: string) {
 }
 
 //クイズを取得
-async function getQuiz(user_id){
+async function getQuiz(){
   try{
-    const response = await axios.get(`${API_URL}/quizzes/random/${user_id}`)
+    const response = await axios.get(`${API_URL}/quiz`)
     return response.data
   } catch (error) {
     console.error(error)
