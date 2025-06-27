@@ -151,6 +151,35 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
     return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # 登録したdb_summaryをSummaryスキーマに変換して返す
 
 
+#EFの内容をEF DBから取得する。	
+@app.get("/ef", response_model=list[EF])
+def get_ef(db_session: Session = Depends(get_db_session)):
+    db_efs = db_session.query(EFModel).all()
+    # EFModelの各要素をEFスキーマに変換
+    efs = [EF(
+        dimension=ef.dimension,
+        sub_dimension=ef.sub_dimension,
+        detailed_category=ef.detailed_category,
+        class_=ef.class_,
+        content=ef.content
+    ) for ef in db_efs]
+    return efs
+
+# EPRsテーブルからEPRの内容を取得するAPI
+@app.get("/epr", response_model=list[EPRs])	
+def get_eprs(db_session: Session = Depends(get_db_session)):
+    db_eprs = db_session.query(EPRsModel).all()
+    # EPRsModelの各要素をEPRスキーマに変換
+    eprs = [EPRs(
+        user_id=epr.user_id,
+        project_name=epr.project_name,
+        start_date=epr.start_date,
+        goal1=epr.goal1,
+        goal2=epr.goal2,
+        goal3=epr.goal3,
+        goal4=epr.goal4,
+    ) for epr in db_eprs]
+    return eprs																		
 
 # chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
 
