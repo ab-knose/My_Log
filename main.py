@@ -20,6 +20,7 @@ from crud import *
 from utils import *
 from db import get_db_session
 from app_base import app
+from mangum import Mangum
 
 
 
@@ -37,7 +38,39 @@ client = boto3.client(
 
 
 
+
 """大きなAPI定義"""
+
+
+# EPRsテーブルに初回のEPRの内容を登録するAPI
+@app.post("/epr", response_model=EPRsResponse)
+def post_epr(epr_request: EPRsRequest, db_session: Session = Depends(get_db_session)):
+    # EPRsModelに変換
+    db_epr = EPRsModel(
+        user_id=epr_request.user_id,
+        project_name=epr_request.project_name,
+        start_date=epr_request.start_date,
+        goal1=epr_request.goal1,
+        goal2=epr_request.goal2,
+        goal3=epr_request.goal3,
+        goal4=epr_request.goal4,
+    )
+    db_session.add(db_epr)
+    db_session.commit()
+    db_session.refresh(db_epr)
+    return EPRsResponse(epr=EPRs(
+        user_id=db_epr.user_id,
+        project_name=db_epr.project_name,
+        start_date=db_epr.start_date,
+        goal1=db_epr.goal1,
+        goal2=db_epr.goal2,
+        goal3=db_epr.goal3,
+        goal4=db_epr.goal4
+    ))
+
+
+
+
 # チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
@@ -144,6 +177,7 @@ def stub() -> str:
     return ls[random.randint(0, len(ls) - 1)]
 
 
+
 @app.post("/create_summary/{user_id}/{start_date}_{end_date}", response_model=str)
 def create_objective_summary(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session = Depends(get_db_session)):
     chats = get_chats_internal(
@@ -186,3 +220,4 @@ def create_objective_summary(user_id: str, start_date: datetime.date, end_date: 
         db_session=db_session
     )
     return summary
+handler = Mangum(app)  # AWS LambdaでFastAPIを使用するためのハンドラー
