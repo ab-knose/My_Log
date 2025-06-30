@@ -78,7 +78,6 @@ class Quiz(BaseModel):
     choice4: str
     quiz: str
     answer: str
-    is_correct: int
 
 class QuizRequest(Quiz):
     pass
