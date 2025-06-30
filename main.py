@@ -154,7 +154,7 @@ def get_ef(db_session: Session = Depends(get_db_session)):
     return efs
 
 # EPRsテーブルからEPRの内容を取得するAPI
-@app.get("/epr", response_model=list[EPRs])	
+@app.get("/epr/{user_id}/{start_date}", response_model=list[EPRs])	
 def get_eprs(db_session: Session = Depends(get_db_session)):
     db_eprs = db_session.query(EPRsModel).all()
     # EPRsModelの各要素をEPRスキーマに変換
