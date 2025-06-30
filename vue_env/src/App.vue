@@ -1,8 +1,5 @@
 <template>
-    <header>
-      ヘッダー
-    </header>
-    <main style="min-height: 70vh; padding-bottom: 60px;">
+    <main style="min-height: 70vh; padding-bottom: 0;">
       <RouterView />
     </main>
     <footer v-if="$route.path !== '/epr_edit' && $route.path !== '/epr_make'">
@@ -27,6 +24,7 @@
   padding: 8px 0;
   background: #f0f0f0;
   border-top: 1px solid #ccc;
+  border-radius: 8px 8px 0 0;
 }
 .bottom-nav button {
   flex: 1;
@@ -45,6 +43,6 @@
 }
 main {
   min-height: 70vh;
-  padding-bottom: 60px;
+  padding-bottom: 0;
 }
 </style>

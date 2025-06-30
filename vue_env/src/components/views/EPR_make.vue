@@ -73,7 +73,18 @@ const resetEdit = () => {
 
 <style scoped>
 main {
-  min-height: 70vh;
+  height: 500px !important;
+  min-height: 500px !important;
+  max-height: 500px !important;
+  width: 600px;
+  min-width: 340px;
+  max-width: 90vw;
+  margin: 40px auto 0 auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 48px 36px 36px 36px;
+  box-sizing: border-box;
 }
 .form-row {
   margin-bottom: 12px;
