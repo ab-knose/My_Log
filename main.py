@@ -2,9 +2,7 @@
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-# SQLAlchemy
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+
 # Bedrock
 import boto3
 from dotenv import load_dotenv
@@ -18,42 +16,25 @@ import random
 # 自作のmodels, schemas, crud, utils
 from models import *
 from schemas import *
-# from crud import *
+from crud import *
 from utils import *
+from db import get_db_session
+from app_base import app
 
 
 
 
-"""DBの設定"""
-# データベースのURLを設定
-# [要対応？]DATABASE_URL が研修で指定されている形式と違うらしい？
-DATABASE_URL = "mysql+pymysql://admin:Digitaldev1@group1-chats.c7c4ksi06r6a.ap-southeast-2.rds.amazonaws.com:3306/group1"
-
-# SQLAlchemyのエンジンとセッションを作成
-engine = create_engine(DATABASE_URL, echo=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def get_db_session():
-    db_session = SessionLocal()
-    try:
-        yield db_session
-    finally:
-        db_session.close()
-
-
-"""FastAPIの準備"""
-# FastAPIアプリケーションのインスタンスを作成
-app = FastAPI()
-
-# CORSミドルウェアの設定
-# これにより、フロントエンドアプリケーション（例：Vue.jsやReactなど）からのリクエストを許可する。
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # または ["http://localhost:5173"]
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+"""Bedrockの設定"""
+load_dotenv()  # .envファイルから環境変数を読み込む
+aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")  # 環境変数からアクセスキーを取得
+aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")  # 環境変数からシークレットキーを取得
+client = boto3.client(
+    'bedrock-runtime',
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key,
+    region_name="us-east-1"
 )
+
 
 
 """API定義"""
@@ -248,28 +229,14 @@ def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session))
     return QuizResponse(quiz=quiz_schema, message="OK")
 
 
-#クイズに答えた場合users_last_action_dateのlast_quiz_answer_dateを更新するAPI
-@app.put("/quiz/last_answerdate/{user_id}", response_model=UsersLastActionDateResponse)	
-def update_last_quiz_answer_date(user_id: str, db_session: Session = Depends(get_db_session)):
-    today = datetime.date.today().strftime("%Y-%m-%d")
-    user = db_session.query(UsersLastActionDateModel).filter(UsersLastActionDateModel.user_id == user_id).first()
-    if user:
-        user.last_quiz_answer_date = today
-        db_session.commit()
-        return UsersLastActionDateResponse(user_id=user_id, date=today)
-    else:
-        # ユーザーがいない場合は新規作成する場合など、適宜対応
-        user = UsersLastActionDateModel(user_id=user_id, last_quiz_answer_date=today)
-        db_session.add(user)
-        db_session.commit()
-        return UsersLastActionDateResponse(user_id=user_id, date=today)
+"""API定義"""
+
 
 
 # チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API
 @app.post("/create_reply", response_model=ChatCreateResponse)
 def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
-
-    AI_objective_answer = create_objective_reply(chat_create_request)
+    AI_objective_answer = create_objective_reply(chat_create_request, db_session=db_session)  # AIの客観的な回答を生成
     AI_personalized_answer=AI_objective_answer
     post_chat(
         ChatRequest(
@@ -289,23 +256,16 @@ def create_reply(chat_create_request: ChatCreateRequest, db_session: Session = D
 def create_objective_reply(chat_create_request: ChatCreateRequest, db_session: Session = Depends(get_db_session)):
     # return stub()
 
-    load_dotenv()  # .envファイルから環境変数を読み込む
-    aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")  # 環境変数からアクセスキーを取得
-    aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")  # 環境変数からシークレットキーを取得
-    client = boto3.client(
-        'bedrock-runtime',
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key,
-        region_name="us-east-1"
-    )
-
     # [要変更] EFの内容は別の関数で持ってくるようにする。
     EF = "1. 日々行動する。2. 他者に配慮する。3. 目標を持つ。4. 自分の感情を理解する。5. 自分の行動を振り返る。6. 他者と協力する。7. 自分の価値観を持つ。8. 健康的な生活を送る。9. 学び続ける。10. 社会に貢献する。"
     initial_prompt = f"""
         ユーザーとチャットをしてもらいます。
         会話の中で、もし以下の[基準]に関連する内容があれば、ユーザーにそれを教えて褒めてください。
-        回答は短文で、あくまで、ユーザーとの気軽なチャットであることを忘れないでください。
-        もしも、[基準]に関連する内容が見つからなかった場合は、ユーザーの入力を受け入れ、自然な会話を続けてください。
+        [注意]
+        ・あくまで、ユーザーとの気軽なチャットであることを忘れないでください。
+        ・回答は50字程度の短文としてください。
+        ・もしも、[基準]に関連する内容が見つからなかった場合は、ユーザーの入力を受け入れ、自然な会話を続けてください。
+        [注意ここまで]
         [基準]：{EF}[基準ここまで]
     """
 
@@ -314,12 +274,36 @@ def create_objective_reply(chat_create_request: ChatCreateRequest, db_session: S
     messages.append({
         "role": "user",
         "content": initial_prompt
-    })
+    })  # Bedrockへの指示を最初に追加
+
+    # 当日のユーザーのチャット履歴を取得
+    today = chat_create_request.date_time.date()
+    chats = get_chats_internal(user_id=chat_create_request.user_id, start_date=today, end_date=today, db_session=db_session).chats
+
+    for chat in chats: # ユーザーとAIの応答を交互に追加
+        messages.append({
+            "role": "user",
+            "content": chat.user_prompt
+        })
+        messages.append({
+            "role": "assistant",
+            "content": chat.AI_objective_answer
+        })
+
     messages.append({
         "role": "user",
         "content": chat_create_request.user_prompt
-    })
+    })  # ユーザーの入力を追加
 
+    AI_objective_answer = communicate_with_bedrock(client=client,
+        messages=messages,
+        db_session=db_session
+    )
+    return AI_objective_answer
+
+
+def communicate_with_bedrock(client: boto3.client, messages: list[dict], db_session: Session = Depends(get_db_session)) -> str:
+    # return stub()
     body = json.dumps(  # JSON形式でリクエストボディを作成
         {
             "anthropic_version": "bedrock-2023-05-31",

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
 const user_id = window.sessionStorage.getItem("user_id");
 console.log(user_id);
@@ -23,7 +24,7 @@ const eprData = ref({
   goal5: ''
 });
 
-onMounted(() => {
+onMounted(async () => {
   const data = window.sessionStorage.getItem('EPR_DATA');
   if (data) {
     const parsed = JSON.parse(data);
@@ -31,6 +32,29 @@ onMounted(() => {
     if (parsed.pjNo && !parsed.pjName) parsed.pjName = parsed.pjNo;
     if (parsed.date && !parsed.startDate) parsed.startDate = parsed.date;
     Object.assign(eprData.value, parsed);
+  } else if (user_id) {
+    // sessionStorageがなければAPIから取得
+    try {
+      const res = await axios.get('http://127.0.0.1:8000/epr');
+      // user_idが一致する最新EPRを取得
+      const userEprs = Array.isArray(res.data) ? res.data.filter(epr => epr.user_id === user_id) : [];
+      if (userEprs.length > 0) {
+        // start_date降順で最新を取得（string→Date型で比較）
+        userEprs.sort((a, b) => new Date(String(b.start_date)).getTime() - new Date(String(a.start_date)).getTime());
+        const latest = userEprs[0];
+        eprData.value = {
+          pjName: latest.project_name,
+          startDate: latest.start_date,
+          goal1: latest.goal1 || '',
+          goal2: latest.goal2 || '',
+          goal3: latest.goal3 || '',
+          goal4: latest.goal4 || '',
+          goal5: latest.goal5 || ''
+        };
+      }
+    } catch (err) {
+      console.error('EPR取得失敗', err);
+    }
   }
 });
 </script>
