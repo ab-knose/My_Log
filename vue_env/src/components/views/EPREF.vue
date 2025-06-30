@@ -96,11 +96,17 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100vh;
+  height: 500px !important;
+  min-height: 500px !important;
+  max-height: 500px !important;
+  width: 600px;
+  min-width: 340px;
+  max-width: 90vw;
   background: #f4f7fa;
   overflow-y: auto;
   overflow-x: hidden; /* 横スクロール禁止 */
   padding-bottom: 32px; /* フッター分の余白 */
+  border-radius: 8px;
 }
 .half {
   flex: 1;
@@ -108,7 +114,6 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
 }
 .upper, .lower {
   width: 600px;

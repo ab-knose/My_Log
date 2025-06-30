@@ -26,18 +26,24 @@ const showSummary = () => {
 
 <style scoped>
 .term-eval-container {
-    min-height: 100vh;
+    height: 500px;
+    min-height: 500px;
+    max-height: 500px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #f4f7fa;
+    border-radius: 8px;
 }
 .term-eval-card {
     width: 600px;
     min-width: 340px;
     max-width: 90vw;
+    height: 500px;
+    min-height: 500px;
+    max-height: 500px;
     background: #fff;
-    border-radius: 18px;
+    border-radius: 8px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     padding: 48px 36px 36px 36px;
     display: flex;

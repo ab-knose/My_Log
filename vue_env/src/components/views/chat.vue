@@ -132,14 +132,17 @@ const sendMessage = async () => {
 
 <style scoped>
 .chat-container {
-  max-width: 400px;
-  margin: 40px auto;
+  width: 600px;
+  min-width: 340px;
+  max-width: 90vw;
+  margin: 0px auto;
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 16px 16px 0 16px;
   background: #fafafa;
-  height: 80vh;
-  min-height: 480px;
+  height: 500px !important;
+  min-height: 500px !important;
+  max-height: 500px !important;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
