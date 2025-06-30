@@ -65,3 +65,4 @@ class  EPRsModel(Base):
     goal2 = Column(String)
     goal3 = Column(String)
     goal4 = Column(String)
+
