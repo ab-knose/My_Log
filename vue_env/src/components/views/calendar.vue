@@ -57,31 +57,25 @@ console.log("user_id(sub):", USER_ID)
 export default defineComponent({
   components: { VueCal },
   setup() {
-    const labeledData = ref<string[]>([]) // APIから取得した振り返りを行った日付のリスト
-    const events = ref<CalendarEvent[]>([]) // vueカレンダーで表示するイベントのリスト
-    const selectedDate = ref<Date>(new Date()) // カレンダー上で選択された日付
+    const labeledData = ref<string[]>([]); // APIから取得した振り返りを行った日付のリスト
+    const events = ref<CalendarEvent[]>([]); // vueカレンダーで表示するイベントのリスト
+    const selectedDate = ref<Date>(new Date()); // カレンダー上で選択された日付
     
     //振り返りを行った日付を取得＆vueカレンダーで表示する形式に変換
     onMounted(async () => {
-      labeledData.value = await getLabeledData(USER_ID)
-      events.value = yearsToEventArray(labeledData.value)
-
-      //quiz
-      getLastQuizAnswerDate(USER_ID).then(lastAnswerDate => {
-        // 最終クイズ回答日が今日でなければクイズ表示
-        let today = new Date()
-        let formattedTodayDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-        if (lastAnswerDate == formattedTodayDate) {
-          alert(`最終クイズ回答日と一致`)
-        } else {
-          alert(`最終クイズ回答日と一致しません`)
+      labeledData.value = await getLabeledData(USER_ID);
+      events.value = yearsToEventArray(labeledData.value);
+      
+      getQuiz(USER_ID).then((quiz) =>{
+        if (quiz.quiz != null){
+          alert(`今日のクイズ: ${quiz.quiz.quiz}\n選択肢1: ${quiz.quiz.choice1}\n選択肢2: ${quiz.quiz.choice2}\n選択肢3: ${quiz.quiz.choice3}\n選択肢4: ${quiz.quiz.choice4}\n答えはOKを押して表示`);
+          alert(`答え: ${quiz.quiz.answer}`);
+            
+          //クイズ回答日を更新
+          putLastQuizAnswereDate(USER_ID).then(() => {
+            console.log('クイズ回答日を更新');
+          })
         }
-
-        //TODO: クイズ回答終了後
-        //クイズ回答日を更新
-        putLastQuizAnswereDate(USER_ID).then(() => {
-          console.log('クイズ回答日を更新しました')
-        })
       })
     })
 
@@ -146,20 +140,10 @@ async function getSummary(user_id: string, date: string) {
   }
 }
 
-//クイズ回答日を取得
-async function getLastQuizAnswerDate(user_id: string) {
-  try {
-    const response = await axios.get(`${API_URL}/quiz/last_answeredate/${user_id}`)
-    return response.data
-  } catch (error) {
-    console.error(error)
-  }
-}
-
 async function putLastQuizAnswereDate(user_id: string) {
   const userData = {id: user_id}
   try {
-    const response = await axios.put(`${API_URL}/quiz/last_answeredate/${user_id}`, userData)
+    const response = await axios.put(`${API_URL}/quiz/last_answerdate/${user_id}`, userData)
     return response.data
   } catch (error) {
     console.error(error)
@@ -167,9 +151,9 @@ async function putLastQuizAnswereDate(user_id: string) {
 }
 
 //クイズを取得
-async function getQuiz(){
+async function getQuiz(user_id){
   try{
-    const response = await axios.get(`${API_URL}/quiz`)
+    const response = await axios.get(`${API_URL}/quizzes/random/${user_id}`)
     return response.data
   } catch (error) {
     console.error(error)
