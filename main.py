@@ -38,118 +38,9 @@ client = boto3.client(
 
 
 
-"""API定義"""
-@app.get("/")
-def get_root():
-    return {"message": "Welcome to the My Log app!"}
 
-# chatsテーブルから単一のchatデータを取得するAPI
-# 仕様書には無いが、テスト用に作っておく。エンドポイントに注意。
-@app.get("/chats/single/{user_id}", response_model=ChatResponse)
-def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
-    db_chat = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).first()
-    return ChatResponse(chat=convert_chat_model_to_chat_schema(db_chat))  # 登録したdb_chatをChatスキーマに変換して返す
+"""大きなAPI定義"""
 
-# chatsテーブルから複数のchatデータを取得するAPI
-@app.get("/chats/{user_id}/{start_date}_{end_date}", response_model=ChatsResponse)
-def get_chats(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session = Depends(get_db_session)):
-    db_chats = db_session.query(ChatsModel).filter(
-        ChatsModel.user_id == user_id,
-        ChatsModel.date_time >= datetime.datetime.combine(start_date, datetime.time.min),
-        ChatsModel.date_time <= datetime.datetime.combine(end_date, datetime.time.max)
-    ).all()
-    chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
-
-    return ChatsResponse(chats=chats)
-
-
-# chatsテーブルからすべてのchatデータを削除するAPI
-"""※危険！使う時は全員の同意を得てからにせよ。"""
-@app.delete("/chats", response_model=ChatsResponse)
-def delete_all_chats(db_session: Session = Depends(get_db_session)):
-    db_chats = db_session.query(ChatsModel).all()
-    chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
-
-    db_session.query(ChatsModel).delete()  # 全てのchatデータを削除
-    db_session.commit()  # 変更をコミット
-    chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
-
-    return ChatsResponse(chats=chats)
-
-
-# chatsテーブルに単一のchatデータを登録するAPI
-@app.post("/chats", response_model=ChatResponse)
-def post_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_session)):
-    db_chat = convert_chat_schema_to_chat_model(chat_request)  # ChatRequestをChatsModelに変換
-    db_chat = convert_chat_schema_to_chat_model(chat_request)  # ChatRequestをChatsModelに変換
-    db_session.add(db_chat)
-    db_session.commit()
-    db_session.refresh(db_chat)
-    return ChatResponse(chat=chat_request)
-
-
-
-# summariesテーブルから単一のsummaryデータを取得するAPI
-# 仕様書には無いが、テスト用に作っておく。エンドポイントに注意。
-@app.get("/summaries/single/{user_id}", response_model=SummaryResponse)
-def get_summary(user_id: str, db_session: Session = Depends(get_db_session)):
-
-
-    db_summary = db_session.query(SummariesModel).filter(SummariesModel.user_id == user_id).first()
-    return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # db_summaryをSummaryスキーマに変換して返す
-
-# summariesテーブルから複数のsummaryデータを取得するAPI
-@app.get("/summaries/{user_id}/{start_date}_{end_date}", response_model=SummariesResponse)
-def get_summaries(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session = Depends(get_db_session)):
-    db_summaries = db_session.query(SummariesModel).filter(
-        SummariesModel.user_id == user_id,
-        SummariesModel.date >= start_date,
-        SummariesModel.date <= end_date
-    ).all()
-    summaries = list(map(convert_summary_model_to_summary_schema, db_summaries))  # db_summariesの各要素をSummaryスキーマに変換
-    return SummariesResponse(summaries=summaries)
-
-
-
-# summariesテーブルに単一のsummaryデータを登録するAPI
-@app.post("/summaries", response_model=SummaryResponse)
-def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(get_db_session)):
-    db_summary = convert_summary_schema_to_summary_model(summary_request)  # SummaryRequestをSummariesModelに変換
-    db_session.add(db_summary)
-    db_session.commit()
-    db_session.refresh(db_summary)
-    return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # 登録したdb_summaryをSummaryスキーマに変換して返す
-
-
-#EFの内容をEF DBから取得する。	
-@app.get("/ef", response_model=list[EF])
-def get_ef(db_session: Session = Depends(get_db_session)):
-    db_efs = db_session.query(EFModel).all()
-    # EFModelの各要素をEFスキーマに変換
-    efs = [EF(
-        dimension=ef.dimension,
-        sub_dimension=ef.sub_dimension,
-        detailed_category=ef.detailed_category,
-        class_=ef.class_,
-        content=ef.content
-    ) for ef in db_efs]
-    return efs
-
-# EPRsテーブルからEPRの内容を取得するAPI
-@app.get("/epr/{user_id}/{start_date}", response_model=list[EPRs])	
-def get_eprs(db_session: Session = Depends(get_db_session)):
-    db_eprs = db_session.query(EPRsModel).all()
-    # EPRsModelの各要素をEPRスキーマに変換
-    eprs = [EPRs(
-        user_id=epr.user_id,
-        project_name=epr.project_name,
-        start_date=epr.start_date,
-        goal1=epr.goal1,
-        goal2=epr.goal2,
-        goal3=epr.goal3,
-        goal4=epr.goal4,
-    ) for epr in db_eprs]
-    return eprs	
 
 # EPRsテーブルに初回のEPRの内容を登録するAPI	
 @app.post("/epr", response_model=EPRsResponse)
@@ -177,64 +68,8 @@ def post_epr(epr_request: EPRsRequest, db_session: Session = Depends(get_db_sess
         goal4=db_epr.goal4
     ))												
 
-# chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
-
-@app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
-def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
-    db_chats = db_session.query(ChatsModel).filter(ChatsModel.user_id == user_id).all()
-    # 日付だけを抽出し、重複をなくす
-    labeled_dates = list({chat.date_time.date() for chat in db_chats})
-    labeled_dates.sort()
-    return labeled_dates
-
-# EFからランダムにクイズを選択し取得するAPI
-@app.get("/quizzes/random/{user_id}", response_model=QuizResponse)
-def get_random_quiz(user_id: str, db_session: Session = Depends(get_db_session)):
-    import hashlib
-    import datetime
-
-#teを更新するAPI
-    today = datetime.date.today()
-    today = datetime.date.today().strftime("%Y-%m-%d")
-
-    # 既に今日クイズに回答しているか確認
-    answered = db_session.query(UsersLastActionDateModel).filter(
-        UsersLastActionDateModel.user_id == user_id,
-        UsersLastActionDateModel.last_quiz_answer_date == today
-    ).first()
-    if answered:
-        # 422エラーではなく、200で既に回答済みを返す
-        return QuizResponse(quiz=None, message="Already answered today's quiz")
-
-    quizzes = db_session.query(QuizzesModel).all()
-    if not quizzes:
-        # 404エラーではなく、200でクイズ無しを返す
-        return QuizResponse(quiz=None, message="No quizzes found")
-
-    quiz_count = len(quizzes)
-    # user_idと日付で決定
-    hash_input = f"{user_id}_{today}".encode()
-    hash_value = int(hashlib.sha256(hash_input).hexdigest(), 16)
-    quiz_index = hash_value % quiz_count
-
-    quiz = quizzes[quiz_index]
-    quiz_schema = Quiz(
-        id=quiz.id,
-        choice1=quiz.choice1,
-        choice2=quiz.choice2,
-        choice3=quiz.choice3,
-        choice4=quiz.choice4,
-        quiz=quiz.quiz,
-        answer=quiz.answer,
-    )
-    return QuizResponse(quiz=quiz_schema, message="OK")
 
 
-"""API定義"""
-
-@app.get("/")
-def read_root():
-    return {"message": "helloworld"}
 
 # チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API
 @app.post("/create_reply", response_model=ChatCreateResponse)
@@ -340,5 +175,56 @@ def stub() -> str:
         "カメレオンは舌を体の2倍以上の長さまで伸ばせます。"
     ]
     return ls[random.randint(0, len(ls) - 1)]
+
+
+
+@app.post("/create_summary/{user_id}/{start_date}_{end_date}", response_model=str)
+def create_objective_summary(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session = Depends(get_db_session)):
+    chats = get_chats_internal(
+        user_id=user_id,
+        start_date=start_date,
+        end_date=end_date,
+        db_session=db_session
+    )
+
+    initial_prompt = f"""
+        ユーザーとチャットをしてもらいます。
+        会話の中で、もし以下の[基準]に関連する内容があれば、ユーザーにそれを教えて褒めてください。
+        [注意]
+        ・あくまで、ユーザーとの気軽なチャットであることを忘れないでください。
+        ・回答は50字程度の短文としてください。
+        ・もしも、[基準]に関連する内容が見つからなかった場合は、ユーザーの入力を受け入れ、自然な会話を続けてください。
+        [注意ここまで]
+        [基準]：{EF}[基準ここまで]
+    """
+
+    # initial_prompt + 会話の履歴 をBedrockに与えるためのリスト
+    messages = []
+    messages.append({
+        "role": "user",
+        "content": initial_prompt
+    })  # Bedrockへの指示を最初に追加
+
+
+    for chat in chats: # ユーザーとAIの応答を交互に追加
+        messages.append({
+            "role": "user",
+            "content": chat.user_prompt
+        })
+        messages.append({
+            "role": "assistant",
+            "content": chat.AI_objective_answer
+        })
+
+    messages.append({
+        "role": "user",
+        "content": chat_create_request.user_prompt
+    })  # ユーザーの入力を追加
+
+    AI_objective_answer = communicate_with_bedrock(client=client,
+        messages=messages,
+        db_session=db_session
+    )
+    return AI_objective_answer
 
 handler = Mangum(app)  # AWS LambdaでFastAPIを使用するためのハンドラー
