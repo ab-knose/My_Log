@@ -24,6 +24,7 @@ class SummariesModel(Base):
     date = Column(Date, primary_key=True, index=True)
     summary = Column(String)
 
+
 # quizzes DBのモデル定義
 class QuizzesModel(Base):
     __tablename__ = "quizzes"  # テーブル名
@@ -35,13 +36,15 @@ class QuizzesModel(Base):
     choice3 = Column(String, primary_key=True, index=True)
     choice4 = Column(String, primary_key=True, index=True)
 
+
 # users_last_action_date DBのモデル定義
 class UsersLastActionDateModel(Base):
     __tablename__ = "users_last_action_date"  # テーブル名
     user_id = Column(String, nullable=False, primary_key=True, index=True)
     last_login_date = Column(Date)
     last_quiz_answer_date = Column(Date)
-   
+
+
 # EF DBのモデル定義
 class EFModel(Base):
     __tablename__ = "EF"  # テーブル名
@@ -50,6 +53,7 @@ class EFModel(Base):
     detailed_category = Column(String)
     class_ = Column(Integer, name = "class",nullable=False)  # 'class'は予約語のためclass_
     content = Column(String, primary_key=True, index=True)
+
 
 #EPRs DBのモデル定義
 class  EPRsModel(Base):
@@ -61,4 +65,3 @@ class  EPRsModel(Base):
     goal2 = Column(String)
     goal3 = Column(String)
     goal4 = Column(String)
-    

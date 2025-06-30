@@ -39,13 +39,12 @@ def get_chat(user_id: str, db_session: Session = Depends(get_db_session)):
 # chatsテーブルから複数のchatデータを取得するAPI
 @app.get("/chats/{user_id}/{start_date}_{end_date}", response_model=ChatsResponse)
 def get_chats(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session = Depends(get_db_session)):
-    chats_response = get_chats_internal(user_id, start_date, end_date, db_session=db_session)
-    return chats_response
+    return get_chats_internal(user_id, start_date, end_date, db_session=db_session)
 
 
 def get_chats_internal(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session) -> ChatsResponse:
     """
-    内部関数: chatsテーブルから全てのchatデータを取得する。
+    内部関数: chatsテーブルから複数のchatデータを取得する。
     これは、他のAPIからも利用されるため、共通の処理として定義している。
     """
     db_chats = db_session.query(ChatsModel).filter(
@@ -54,19 +53,6 @@ def get_chats_internal(user_id: str, start_date: datetime.date, end_date: dateti
         ChatsModel.date_time <= datetime.datetime.combine(end_date, datetime.time.max)
     ).all()
     chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
-    return ChatsResponse(chats=chats)
-
-# chatsテーブルからすべてのchatデータを削除するAPI
-"""※危険！使う時は全員の同意を得てからにせよ。"""
-@app.delete("/chats", response_model=ChatsResponse)
-def delete_all_chats(db_session: Session = Depends(get_db_session)):
-    db_chats = db_session.query(ChatsModel).all()
-    chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
-
-    db_session.query(ChatsModel).delete()  # 全てのchatデータを削除
-    db_session.commit()  # 変更をコミット
-    chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
-
     return ChatsResponse(chats=chats)
 
 
@@ -81,19 +67,34 @@ def post_chat(chat_request: ChatRequest, db_session: Session = Depends(get_db_se
     return ChatResponse(chat=chat_request)
 
 
+# chatsテーブルからすべてのchatデータを削除するAPI
+"""※危険！使う時は全員の同意を得てからにせよ。"""
+@app.delete("/chats", response_model=ChatsResponse)
+def delete_all_chats(db_session: Session = Depends(get_db_session)):
+    db_chats = db_session.query(ChatsModel).all()
+    chats = list(map(convert_chat_model_to_chat_schema, db_chats))  # db_chatsの各要素をChatスキーマに変換
+    db_session.query(ChatsModel).delete()  # 全てのchatデータを削除
+    db_session.commit()  # 変更をコミット
+    return ChatsResponse(chats=chats)
+
 
 # summariesテーブルから単一のsummaryデータを取得するAPI
 # 仕様書には無いが、テスト用に作っておく。エンドポイントに注意。
 @app.get("/summaries/single/{user_id}", response_model=SummaryResponse)
 def get_summary(user_id: str, db_session: Session = Depends(get_db_session)):
-
-
     db_summary = db_session.query(SummariesModel).filter(SummariesModel.user_id == user_id).first()
     return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # db_summaryをSummaryスキーマに変換して返す
 
 # summariesテーブルから複数のsummaryデータを取得するAPI
 @app.get("/summaries/{user_id}/{start_date}_{end_date}", response_model=SummariesResponse)
 def get_summaries(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session = Depends(get_db_session)):
+    return get_summaries_internal(user_id, start_date, end_date, db_session=db_session)
+
+def get_summaries_internal(user_id: str, start_date: datetime.date, end_date: datetime.date, db_session: Session = Depends(get_db_session)):
+    """
+    内部関数: summariesテーブルから複数のsummaryデータを取得する。
+    これは、他のAPIからも利用されるため、共通の処理として定義している。
+    """
     db_summaries = db_session.query(SummariesModel).filter(
         SummariesModel.user_id == user_id,
         SummariesModel.date >= start_date,
@@ -101,7 +102,6 @@ def get_summaries(user_id: str, start_date: datetime.date, end_date: datetime.da
     ).all()
     summaries = list(map(convert_summary_model_to_summary_schema, db_summaries))  # db_summariesの各要素をSummaryスキーマに変換
     return SummariesResponse(summaries=summaries)
-
 
 
 # summariesテーブルに単一のsummaryデータを登録するAPI
@@ -112,6 +112,17 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
     db_session.commit()
     db_session.refresh(db_summary)
     return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # 登録したdb_summaryをSummaryスキーマに変換して返す
+
+
+# summariesテーブルからすべてのsummaryデータを削除するAPI
+"""※危険！使う時は全員の同意を得てからにせよ。"""
+@app.delete("/summaries", response_model=SummariesResponse)
+def delete_all_summaries(db_session: Session = Depends(get_db_session)):
+    db_summaries = db_session.query(SummariesModel).all()
+    summaries = list(map(convert_summary_model_to_summary_schema, db_summaries))  # db_summariesの各要素をSummaryスキーマに変換
+    db_session.query(SummariesModel).delete()  # 全てのsummaryデータを削除
+    db_session.commit()  # 変更をコミット
+    return SummariesResponse(summaries=summaries)
 
 
 #EFの内容をEF DBから取得する。
@@ -127,6 +138,7 @@ def get_ef(db_session: Session = Depends(get_db_session)):
         content=ef.content
     ) for ef in db_efs]
     return efs
+
 
 # EPRsテーブルからEPRの内容を取得するAPI
 @app.get("/epr", response_model=list[EPRs])
@@ -144,6 +156,7 @@ def get_eprs(db_session: Session = Depends(get_db_session)):
     ) for epr in db_eprs]
     return eprs
 
+
 # chatsテーブルから特定のユーザーのラベル付けされた日付を取得するAPI
 @app.get("/chats/labeled_dates/{user_id}", response_model=list[datetime.date])
 def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session)):
@@ -152,6 +165,7 @@ def get_labeled_dates(user_id: str, db_session: Session = Depends(get_db_session
     labeled_dates = list({chat.date_time.date() for chat in db_chats})
     labeled_dates.sort()
     return labeled_dates
+
 
 # EFからランダムにクイズを選択し取得するAPI
 @app.get("/quizzes/random/{user_id}", response_model=QuizResponse)
