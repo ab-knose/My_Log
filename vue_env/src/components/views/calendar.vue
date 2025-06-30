@@ -81,12 +81,18 @@ export default defineComponent({
 
     //日付クリック時の処理
     const onCellClick = (date: string) => {
-      getSummary(USER_ID, date).then(summary => {
-        console.log(summary.summaries[0]) //TODO: 二行下で使うために確認
-        if (summary) {
-          alert(`${USER_ID}: ${date} の振り返り内容は ${summary.summaries[0].summary}`)
+      // YYYY-MM-DD形式にゼロ埋め
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      let formattedDate = `${y}-${m}-${d}`;
+
+      getSummary(USER_ID, formattedDate).then(summary => {
+        //console.log(summary.summaries) //TODO: 二行下で使うために確認
+        if (summary.summaries.length > 0) {
+          alert(`${formattedDate} の振り返り内容は ${summary.summaries[0].summary}`)
         } else {
-          alert(`${USER_ID}: ${date} の振り返り内容はありません`)
+          alert(`${formattedDate} の振り返り内容はありません`)
         }
       }) 
     }
@@ -132,8 +138,8 @@ function yearsToEventArray(years: string[]): { start: string; end: string }[] {
 //要約を取得
 async function getSummary(user_id: string, date: string) {
   try {
-    //const response = await axios.get(`${API_URL}/summaries/${user_id}/${date}-${date}`)
-    const response = await axios.get(`${API_URL}/summaries/${user_id}`)
+    const response = await axios.get(`${API_URL}/summaries/${user_id}/${date}_${date}`)
+    //const response = await axios.get(`${API_URL}/summaries/${user_id}`)
     return response.data
   } catch (error) {
     console.error(error)
@@ -194,4 +200,16 @@ async function getQuiz(user_id){
   border-radius: 8px !important;
   overflow: hidden;
 }
+
+
+.vuecal__cell-events-count::before{
+  content: "✔";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1em;
+  color: #fff;
+  z-index: 2;
+}
+
 </style>
