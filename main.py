@@ -20,6 +20,7 @@ from crud import *
 from utils import *
 from db import get_db_session
 from app_base import app
+from mangum import Mangum
 
 
 
@@ -39,7 +40,9 @@ client = boto3.client(
 
 """API定義"""
 
-
+@app.get("/")
+def read_root():
+    return {"message": "helloworld"}
 
 # チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API
 @app.post("/create_reply", response_model=ChatCreateResponse)
@@ -145,3 +148,5 @@ def stub() -> str:
         "カメレオンは舌を体の2倍以上の長さまで伸ばせます。"
     ]
     return ls[random.randint(0, len(ls) - 1)]
+
+handler = Mangum(app)  # AWS LambdaでFastAPIを使用するためのハンドラー
