@@ -22,6 +22,8 @@ from db import get_db_session
 from app_base import app
 from mangum import Mangum
 
+from ses import *
+
 
 
 
@@ -58,6 +60,41 @@ def post_epr(epr_request: EPRsRequest, db_session: Session = Depends(get_db_sess
     db_session.add(db_epr)
     db_session.commit()
     db_session.refresh(db_epr)
+    return EPRsResponse(
+        epr=EPRs(
+            user_id=db_epr.user_id,
+            project_name=db_epr.project_name,
+            start_date=db_epr.start_date,
+            goal1=db_epr.goal1,
+            goal2=db_epr.goal2,
+            goal3=db_epr.goal3,
+            goal4=db_epr.goal4
+            )
+        )
+											
+
+# EPRsの内容を更新するAPI
+@app.put("/epr", response_model=EPRsResponse)
+def update_epr(eprs_upload_request:EPRsUploadRequest,  db_session: Session = Depends(get_db_session)):
+    # EPRsModelに変換
+    db_epr = db_session.query(EPRsModel).filter(
+        EPRsModel.user_id == eprs_upload_request.user_id,
+        EPRsModel.start_date == eprs_upload_request.start_date,   
+    ).first()
+
+    if not db_epr:
+        raise HTTPException(status_code=404, detail="EPR not found")
+
+    # 更新
+    db_epr.project_name = eprs_upload_request.project_name
+    db_epr.goal1 = eprs_upload_request.goal1
+    db_epr.goal2 = eprs_upload_request.goal2
+    db_epr.goal3 = eprs_upload_request.goal3
+    db_epr.goal4 = eprs_upload_request.goal4
+
+    db_session.commit()
+    db_session.refresh(db_epr)
+
     return EPRsResponse(epr=EPRs(
         user_id=db_epr.user_id,
         project_name=db_epr.project_name,
@@ -67,8 +104,6 @@ def post_epr(epr_request: EPRsRequest, db_session: Session = Depends(get_db_sess
         goal3=db_epr.goal3,
         goal4=db_epr.goal4
     ))
-
-
 
 
 # チャットの返信を生成し、chats DBに登録した後、フロントエンドにAI_personalized API

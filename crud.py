@@ -161,9 +161,12 @@ def get_ef(db_session: Session = Depends(get_db_session)):
 
 
 # EPRsテーブルからEPRの内容を取得するAPI
-@app.get("/epr", response_model=list[EPRs])
-def get_eprs(db_session: Session = Depends(get_db_session)):
-    db_eprs = db_session.query(EPRsModel).all()
+@app.get("/epr/{user_id}/{start_date}", response_model=list[EPRs])
+def get_eprs(user_id: str, start_date: datetime.date, db_session: Session = Depends(get_db_session)):
+    db_eprs = db_session.query(EPRsModel).filter(
+        EPRsModel.user_id == user_id,
+        EPRsModel.start_date == start_date
+    ).all()
     # EPRsModelの各要素をEPRスキーマに変換
     eprs = [EPRs(
         user_id=epr.user_id,

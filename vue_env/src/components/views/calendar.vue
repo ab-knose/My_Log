@@ -185,4 +185,29 @@ async function getQuiz(){
   color: red !important;
   border-radius: 50%;
 } */
+
+/* Monthボタンを非表示にする */
+.vuecal__view-btn {
+  display: none !important;
+}
+
+/* カレンダーの縦幅・横幅を明示的に指定 */
+.vuecal {
+  height: 500px !important;
+  min-height: 500px !important;
+  max-height: 500px !important;
+  width: 600px !important;
+  min-width: 340px !important;
+  max-width: 90vw !important;
+  margin: 0 auto !important;
+  border-radius: 8px !important;
+  overflow: hidden; /* 角丸を適用するために追加 */
+}
+
+/* カレンダーの灰色部分も角丸に */
+.vuecal__background,
+.vuecal__weeks {
+  border-radius: 8px !important;
+  overflow: hidden;
+}
 </style>

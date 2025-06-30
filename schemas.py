@@ -130,7 +130,6 @@ class EPRsRequest(EPRs):
     start_date: datetime.date  # 開始日を含む
 class EPRsResponse(BaseModel):
     epr: EPRs  # EPRsのデータを含む
-    project_name: str  # プロジェクト名を含む
 
 #EPRをアップロードするためのリクエストスキーマ
 class EPRsUploadRequest(BaseModel):
@@ -153,6 +152,8 @@ class EPRsUploadResponse(BaseModel):
     goal3: str | None = None  # 目標3を含む（オプション）
     goal4: str | None = None  # 目標4を含む（オプション）
     # goal5: str | None = None  # 目標5を含む（オプション、必要に応じて追加）
+
+
  
 
 """Bedrockと通信するためのFastAPIスキーマ定義"""
