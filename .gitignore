@@ -16,6 +16,4 @@ env/
 *.log
 *.tmp
 
-dist/
-package/
-*.zip
+    
