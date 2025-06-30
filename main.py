@@ -151,26 +151,20 @@ def create_objective_summary(user_id: str, start_date: datetime.date, end_date: 
         start_date=start_date,
         end_date=end_date,
         db_session=db_session
-    )
+    ).chats
 
-    initial_prompt = f"""
-        ユーザーとチャットをしてもらいます。
-        会話の中で、もし以下の[基準]に関連する内容があれば、ユーザーにそれを教えて褒めてください。
+    ending_prompt = f"""
+        上記は、ユーザーとAIの間で交わされた、ある一日の会話です。
+        ユーザーのその日の行動を要約してください。
         [注意]
-        ・あくまで、ユーザーとの気軽なチャットであることを忘れないでください。
-        ・回答は50字程度の短文としてください。
-        ・もしも、[基準]に関連する内容が見つからなかった場合は、ユーザーの入力を受け入れ、自然な会話を続けてください。
+        ・要約は200字程度にしてください。
+        ・要約は客観的に行ってください。
+        ・AIがどのように応答したかは要約に含めないでください。
         [注意ここまで]
-        [基準]：{EF}[基準ここまで]
     """
 
     # initial_prompt + 会話の履歴 をBedrockに与えるためのリスト
     messages = []
-    messages.append({
-        "role": "user",
-        "content": initial_prompt
-    })  # Bedrockへの指示を最初に追加
-
 
     for chat in chats: # ユーザーとAIの応答を交互に追加
         messages.append({
@@ -181,14 +175,14 @@ def create_objective_summary(user_id: str, start_date: datetime.date, end_date: 
             "role": "assistant",
             "content": chat.AI_objective_answer
         })
-
     messages.append({
         "role": "user",
-        "content": chat_create_request.user_prompt
-    })  # ユーザーの入力を追加
+        "content": ending_prompt
+    })  # Bedrockへの指示を最初に追加
 
-    AI_objective_answer = communicate_with_bedrock(client=client,
+
+    summary = communicate_with_bedrock(client=client,
         messages=messages,
         db_session=db_session
     )
-    return AI_objective_answer
+    return summary

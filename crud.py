@@ -113,6 +113,26 @@ def post_summary(summary_request: SummaryRequest, db_session: Session = Depends(
     db_session.refresh(db_summary)
     return SummaryResponse(summary=convert_summary_model_to_summary_schema(db_summary))  # 登録したdb_summaryをSummaryスキーマに変換して返す
 
+def put_summary_internal(summary_request: SummaryRequest, db_session: Session = Depends(get_db_session)):
+    """
+    内部関数: summariesテーブルに単一のsummaryデータを登録する。
+    これは、他のAPIからも利用されるため、共通の処理として定義している。
+    """
+    db_summary = db_session.query(SummariesModel).filter(
+        SummariesModel.user_id == summary_request.user_id,
+        SummariesModel.date == summary_request.date
+    ).first()
+    if db_summary:  # 既に存在する場合は更新
+        db_summary = convert_summary_schema_to_summary_model(summary_request)  # SummaryRequestをSummariesModelに変換して、db_summaryを更新する。
+        db_session.commit()
+        db_session.refresh(db_summary)
+        return convert_summary_model_to_summary_schema(db_summary)  # 登録したdb_summaryをSummaryスキーマに変換して返す
+    else:  # 無ければ新規作成
+        db_summary = convert_summary_schema_to_summary_model(summary_request)  # SummaryRequestをSummariesModelに変換。
+        db_session.add(db_summary)
+        db_session.commit()
+        db_session.refresh(db_summary)
+        return convert_summary_model_to_summary_schema(db_summary)  # 登録したdb_summaryをSummaryスキーマに変換して返す
 
 # summariesテーブルからすべてのsummaryデータを削除するAPI
 """※危険！使う時は全員の同意を得てからにせよ。"""
