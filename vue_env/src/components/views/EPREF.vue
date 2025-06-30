@@ -119,7 +119,7 @@ onMounted(async () => {
   width: 600px;
   min-width: 340px;
   max-width: 90vw;
-  margin: 32px auto 0 auto;
+  margin: 4px auto;
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.08);
   background: #fff;
