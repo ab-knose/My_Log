@@ -77,12 +77,7 @@ def update_epr(eprs_upload_request:EPRsUploadRequest,  db_session: Session = Dep
     # EPRsModelに変換
     db_epr = db_session.query(EPRsModel).filter(
         EPRsModel.user_id == eprs_upload_request.user_id,
-        EPRsModel.project_name == eprs_upload_request.project_name,
-        EPRsModel.start_date == eprs_upload_request.start_date,
-        EPRsModel.goal1 == eprs_upload_request.goal1,
-        EPRsModel.goal2 == eprs_upload_request.goal2,
-        EPRsModel.goal3 == eprs_upload_request.goal3,
-        EPRsModel.goal4 == eprs_upload_request.goal4
+        EPRsModel.start_date == eprs_upload_request.start_date,   
     ).first()
 
     if not db_epr:
