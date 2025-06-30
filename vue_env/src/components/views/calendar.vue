@@ -143,7 +143,7 @@ async function getSummary(user_id: string, date: string) {
 async function putLastQuizAnswereDate(user_id: string) {
   const userData = {id: user_id}
   try {
-    const response = await axios.put(`${API_URL}/quiz/last_answeredate/${user_id}`, userData)
+    const response = await axios.put(`${API_URL}/quiz/last_answerdate/${user_id}`, userData)
     return response.data
   } catch (error) {
     console.error(error)
